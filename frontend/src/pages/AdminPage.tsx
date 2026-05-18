@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
-import { Practice, UserInfo } from '../types';
+import { Practice, PracticeStatus, UserInfo } from '../types';
 import { AttendanceSummary } from '../components/AttendanceSummary';
 import { CreatePracticeForm } from '../components/CreatePracticeForm';
 
 interface Props {
   userInfo: UserInfo;
+  onPracticeCreated?: () => void;
 }
 
-export function AdminPage({ userInfo }: Props) {
+export function AdminPage({ userInfo, onPracticeCreated }: Props) {
   const [practices, setPractices] = useState<Practice[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +25,14 @@ export function AdminPage({ userInfo }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleCreate = async (data: Omit<Practice, 'id' | 'createdAt'>) => {
+  const handleStatusChange = (practiceId: string, status: PracticeStatus) => {
+    setPractices(prev => prev.map(p => p.id === practiceId ? { ...p, status } : p));
+  };
+
+  const handleCreate = async (data: Omit<Practice, 'id' | 'createdAt' | 'status'>) => {
     await api.createPractice(userInfo.userId, data);
     await load();
+    onPracticeCreated?.();
   };
 
   const handleAnnounce = async (practiceId: string) => {
@@ -36,7 +42,7 @@ export function AdminPage({ userInfo }: Props) {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.heading}>🛠 管理画面</h1>
+        <h1 style={styles.heading}>管理画面</h1>
         <button style={styles.addBtn} onClick={() => setShowForm(true)}>
           ＋ 練習を追加
         </button>
@@ -54,6 +60,7 @@ export function AdminPage({ userInfo }: Props) {
           practice={p}
           userId={userInfo.userId}
           onAnnounce={handleAnnounce}
+          onStatusChange={handleStatusChange}
         />
       ))}
 

@@ -1,12 +1,12 @@
 import { google } from 'googleapis';
 import { v4 as uuidv4 } from 'uuid';
-import { Practice, Attendance, AttendanceStatus } from '../types';
+import { Practice, PracticeStatus, Attendance, AttendanceStatus } from '../types';
 
 const PRACTICES_SHEET = 'practices';
 const ATTENDANCE_SHEET = 'attendance';
 
 // ヘッダー行
-const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt'];
+const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt', 'status'];
 const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt'];
 
 export class SheetsService {
@@ -49,7 +49,7 @@ export class SheetsService {
   async getPractices(): Promise<Practice[]> {
     const res = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: `${PRACTICES_SHEET}!A:G`,
+      range: `${PRACTICES_SHEET}!A:H`,
     });
     const rows = res.data.values ?? [];
     return rows.slice(1)
@@ -62,28 +62,53 @@ export class SheetsService {
         location:    row[4],
         description: row[5],
         createdAt:   row[6],
+        status:      (row[7] as PracticeStatus) || '開催',
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }
 
-  async createPractice(data: Omit<Practice, 'id' | 'createdAt'>): Promise<Practice> {
+  async createPractice(data: Omit<Practice, 'id' | 'createdAt' | 'status'>): Promise<Practice> {
     const practice: Practice = {
       id: uuidv4(),
       ...data,
       createdAt: new Date().toISOString(),
+      status: '開催',
     };
     await this.sheets.spreadsheets.values.append({
       spreadsheetId: this.spreadsheetId,
-      range: `${PRACTICES_SHEET}!A:G`,
+      range: `${PRACTICES_SHEET}!A:H`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [[
           practice.id, practice.title, practice.date,
-          practice.time, practice.location, practice.description, practice.createdAt,
+          practice.time, practice.location, practice.description, practice.createdAt, practice.status,
         ]],
       },
     });
     return practice;
+  }
+
+  async updatePracticeStatus(id: string, status: PracticeStatus): Promise<Practice> {
+    const res = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `${PRACTICES_SHEET}!A:H`,
+    });
+    const rows = res.data.values ?? [];
+    const rowIndex = rows.findIndex((row, i) => i > 0 && row[0] === id);
+    if (rowIndex < 1) throw new Error('練習が見つかりません');
+
+    await this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.spreadsheetId,
+      range: `${PRACTICES_SHEET}!H${rowIndex + 1}`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [[status]] },
+    });
+
+    const row = rows[rowIndex];
+    return {
+      id: row[0], title: row[1], date: row[2], time: row[3],
+      location: row[4], description: row[5], createdAt: row[6], status,
+    };
   }
 
   // ───────────── Attendance ─────────────

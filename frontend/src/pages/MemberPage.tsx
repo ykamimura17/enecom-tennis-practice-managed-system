@@ -7,11 +7,14 @@ interface Props {
   userInfo: UserInfo;
 }
 
+const PAST_PAGE_SIZE = 10;
+
 export function MemberPage({ userInfo }: Props) {
   const [practices, setPractices] = useState<Practice[]>([]);
   const [attendances, setAttendances] = useState<Record<string, Attendance>>({});
   const [loadingPracticeId, setLoadingPracticeId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [visiblePastCount, setVisiblePastCount] = useState(PAST_PAGE_SIZE);
 
   const load = useCallback(async () => {
     try {
@@ -64,7 +67,7 @@ export function MemberPage({ userInfo }: Props) {
 
       {error && <div style={styles.error}>{error}</div>}
 
-      <h2 style={styles.sectionTitle}>📅 今後の練習</h2>
+      <h2 style={styles.sectionTitle}>今後の練習</h2>
       {upcoming.length === 0 && <p style={styles.empty}>予定されている練習はありません</p>}
       {upcoming.map(p => (
         <PracticeCard
@@ -78,16 +81,25 @@ export function MemberPage({ userInfo }: Props) {
 
       {past.length > 0 && (
         <>
-          <h2 style={{ ...styles.sectionTitle, marginTop: 24 }}>🗂 過去の練習</h2>
-          {past.map(p => (
+          <h2 style={{ ...styles.sectionTitle, marginTop: 24 }}>過去の練習</h2>
+          {past.slice(0, visiblePastCount).map(p => (
             <PracticeCard
               key={p.id}
               practice={p}
               myAttendance={attendances[p.id]}
               onChangeStatus={handleChangeStatus}
               loading={loadingPracticeId === p.id}
+              readonly
             />
           ))}
+          {visiblePastCount < past.length && (
+            <button
+              style={styles.moreBtn}
+              onClick={() => setVisiblePastCount(c => c + PAST_PAGE_SIZE)}
+            >
+              もっと見る（残り{past.length - visiblePastCount}件）
+            </button>
+          )}
         </>
       )}
     </div>
@@ -117,5 +129,17 @@ const styles = {
     padding: 12,
     fontSize: 14,
     marginBottom: 12,
+  } as React.CSSProperties,
+  moreBtn: {
+    display: 'block',
+    width: '100%',
+    padding: '12px 0',
+    border: '1px solid #ddd',
+    borderRadius: 8,
+    background: '#fff',
+    fontSize: 14,
+    color: '#555',
+    cursor: 'pointer',
+    marginTop: 4,
   } as React.CSSProperties,
 };
