@@ -90,10 +90,9 @@ export const api = {
     });
   },
 
-  announcePractice(userId: string, practiceId: string): Promise<void> {
+  announcePractice(userId: string, practiceId: string): Promise<{ message: Record<string, unknown> }> {
     if (IS_MOCK) {
-      alert(`[モック] LINE送信: practiceId=${practiceId}`);
-      return Promise.resolve();
+      return Promise.resolve({ message: { type: 'flex', altText: '[モック]', contents: {} } });
     }
     return request(`/api/practices/${practiceId}/announce`, {
       method: 'POST',

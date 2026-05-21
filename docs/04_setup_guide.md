@@ -49,15 +49,9 @@ https://docs.google.com/spreadsheets/d/{この部分がID}/edit
 
 LINE Developers Console（https://developers.line.biz/console/）でプロバイダーを作成する（未作成の場合）。
 
-### 2.2 Messaging APIチャネル作成
+### 2.2 LINE Loginチャネル作成 + LIFF追加
 
-1. プロバイダー内で「Create a new channel」→「Messaging API」を選択
-2. チャネル名・説明を入力して作成
-3. 「Messaging API」タブで「Channel access token」を発行
-
-このトークンを `.env` の `LINE_CHANNEL_ACCESS_TOKEN` に設定する。
-
-### 2.3 LINE Loginチャネル作成 + LIFF追加
+> **Messaging API チャネルは不要です。** 練習案内は `liff.shareTargetPicker()` で送信します。
 
 1. 同じプロバイダー内で「Create a new channel」→「LINE Login」を選択
 2. チャネル名・説明を入力して作成
@@ -68,23 +62,12 @@ LINE Developers Console（https://developers.line.biz/console/）でプロバイ
    - Scope: `profile` にチェック
 5. 作成後に表示される「LIFF ID」を `.env` の `VITE_LIFF_ID` に設定
 
-### 2.4 Botのグループ招待
+### 2.3 shareTargetPicker の有効化
 
-1. Messaging APIチャネルの「Messaging API」タブで、QRコードまたはBot IDを確認
-2. LINEアプリでBotを友だち追加
-3. 対象のLINEグループにBotを招待
+LIFFアプリ設定画面で **「Share target picker」** をオンにする。  
+これにより管理者がLINEアプリ内でグループを選んでFlex Messageを送信できるようになる。
 
-### 2.5 グループIDの取得
-
-グループIDを取得するには、Messaging APIのWebhookを一時的に設定する方法がある:
-
-1. Messaging APIチャネル → Webhook URL を設定（一時的なエンドポイント）
-2. グループにBotが参加した際のWebhookイベントからグループIDを取得
-3. または、バックエンドを起動しWebhookエンドポイントを実装して取得
-
-取得したグループIDを `.env` の `LINE_GROUP_ID` に設定する。
-
-### 2.6 管理者UserIDの取得
+### 2.4 管理者UserIDの取得
 
 管理者のLINE UserIDはLIFF経由で取得できる:
 
@@ -92,7 +75,7 @@ LINE Developers Console（https://developers.line.biz/console/）でプロバイ
 2. `liff.getProfile()` の結果に含まれる `userId` をコンソールログで確認
 3. または、バックエンドの `/api/me` エンドポイントにアクセスして確認
 
-取得したUserIDを `.env` の `ADMIN_LINE_USER_IDS` に設定する（複数の場合はカンマ区切り）。
+取得した UserID を `.env` の `ADMIN_LINE_USER_IDS` に設定する（複数の場合はカンマ区切り）。
 
 ## 3. ローカル開発環境セットアップ
 

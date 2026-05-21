@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import liff from '@line/liff';
 import { api } from '../api/client';
 import { Practice, PracticeStatus, UserInfo } from '../types';
 import { AttendanceSummary } from '../components/AttendanceSummary';
@@ -36,7 +37,17 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
   };
 
   const handleAnnounce = async (practiceId: string) => {
-    await api.announcePractice(userInfo.userId, practiceId);
+    const { message } = await api.announcePractice(userInfo.userId, practiceId);
+    if (import.meta.env.VITE_MOCK_MODE === 'true') {
+      alert('[モック] shareTargetPicker をスキップしました');
+      return;
+    }
+    if (!liff.isApiAvailable('shareTargetPicker')) {
+      alert('この機能はLINEアプリ内でのみ使用できます');
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await liff.shareTargetPicker([message as any]);
   };
 
   return (

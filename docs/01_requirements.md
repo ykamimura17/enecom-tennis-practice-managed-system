@@ -75,7 +75,7 @@
 
 - 管理者APIは認証が必要（LINE UserIDベース、本番ではLIFF IDトークン検証を推奨）
 - Google Sheets認証はサービスアカウント（JWT）
-- LINE Messaging APIはChannel Access Tokenで認証
+- LINE案内送信は `liff.shareTargetPicker()` を使用（Messaging API / Bot チャネル不要）
 - CORSはフロントエンドのデプロイURLのみ許可
 - `.env`ファイルはGit管理外（.gitignore）
 
@@ -85,7 +85,7 @@
 |------|------|
 | Google Sheets API | 無料 |
 | LINE LIFF | 無料 |
-| LINE Messaging API | 月200通まで無料。超過時¥900/月 |
+| LINE Messaging API | 不要（shareTargetPickerに変更） |
 | Vercel（フロントエンド） | 無料枠 |
 | Render（バックエンド） | 無料枠（スリープあり）。常時起動は$7/月 |
 | **月額合計** | **¥0〜¥1,500** |
@@ -100,6 +100,5 @@
 ## 6. 前提条件
 
 - Google Cloudプロジェクトが作成済みで、Google Sheets APIが有効化されていること
-- LINE Developer Consoleでチャネル（Messaging API / LINE Login）が作成されていること
-- LIFFアプリがLINE LoginチャネルにLIFFアプリとして登録されていること
-- 対象のLINEグループにMessaging APIのBotが参加していること
+- LINE Developer ConsoleでLINE Loginチャネルが作成され、LIFFアプリが登録されていること
+- LIFFアプリの **shareTargetPicker** 機能が有効化されていること

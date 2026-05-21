@@ -17,10 +17,13 @@ line-practice-manager/
 ### 1. LINE Developer Console
 
 1. [LINE Developers](https://developers.line.biz/) でプロバイダーを作成
-2. **Messaging API チャネル** を作成 → チャネルアクセストークン（長期）を発行
-3. **LINE Login チャネル** を作成 → LIFF アプリを追加
+2. **LINE Login チャネル** を作成 → LIFF アプリを追加
    - エンドポイント URL: `https://your-frontend-url.com`（本番デプロイ後に設定）
+   - **Scopes**: `profile` にチェック
+   - **shareTargetPicker** を有効化（LIFF アプリ設定内）
    - LIFF ID を控えておく
+
+> **Messaging API チャネルは不要です。** 練習案内は管理者が `liff.shareTargetPicker()` でグループを選んで送信します。
 
 ### 2. Google Cloud / Sheets
 
@@ -44,13 +47,9 @@ cp .env.example .env
 |------|------|
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | サービスアカウント JSON の中身をそのまま1行で |
 | `GOOGLE_SPREADSHEET_ID` | スプレッドシートのURL中の `...spreadsheets/d/{ここ}/edit` |
-| `LINE_CHANNEL_ACCESS_TOKEN` | Messaging API のチャネルアクセストークン |
-| `LINE_GROUP_ID` | 案内を送るLINEグループのID（Webhookログで確認） |
 | `ADMIN_LINE_USER_IDS` | 管理者のLINE UserID（カンマ区切り）|
 | `VITE_LIFF_ID` | LIFF アプリのID |
 | `VITE_API_BASE_URL` | バックエンドのURL |
-
-> **LINEグループIDの確認方法**: Messaging API の Webhook URLにサーバーを立ち上げた状態でグループにBotを招待してメッセージを送ると、Webhook のログで `source.groupId` が確認できます。
 
 > **管理者UserIDの確認方法**: LINEログインしたユーザーのプロフィール取得APIで `userId` が確認できます。
 
@@ -75,8 +74,9 @@ cd frontend && npm run dev  # :5173
 
 管理者
   └── 管理タブ → 練習を追加 → POST /api/practices → Sheets に記録
-  └── 「LINEグループに案内を送る」 → POST /api/practices/:id/announce
-        └── LINE Flex Message でグループに送信（LIFF リンク付き）
+  └── 「LINE送信」をタップ → POST /api/practices/:id/announce
+        └── バックエンドが Flex Message JSON を返す
+        └── liff.shareTargetPicker() でグループを選択して送信
 ```
 
 ---

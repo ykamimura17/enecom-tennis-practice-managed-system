@@ -1,12 +1,13 @@
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { SheetsService } from './services/sheets';
 import { isAdmin } from './middleware/adminAuth';
-import practicesRouter from './routes/practices';
-import attendanceRouter from './routes/attendance';
-
-dotenv.config();
+import { createPracticesRouter } from './routes/practices';
+import { createAttendanceRouter } from './routes/attendance';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -14,10 +15,11 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
 app.use(express.json());
 
-app.use('/api/practices', practicesRouter);
-app.use('/api/attendance', attendanceRouter);
+const sheets = new SheetsService();
 
-/** GET /api/me - LINEユーザー情報と管理者フラグを返す */
+app.use('/api/practices', createPracticesRouter(sheets));
+app.use('/api/attendance', createAttendanceRouter(sheets));
+
 app.get('/api/me', (req, res) => {
   const userId = req.headers['x-line-user-id'] as string | undefined;
   if (!userId) {
@@ -30,8 +32,6 @@ app.get('/api/me', (req, res) => {
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 async function main() {
-  // Google Sheetsのシート初期化（ヘッダーがなければ追加）
-  const sheets = new SheetsService();
   await sheets.init();
   console.log('✅ Google Sheets initialized');
 

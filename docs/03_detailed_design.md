@@ -13,7 +13,7 @@ line-practice-manager/
 │   │   │   └── index.ts              # Practice / Attendance 型定義
 │   │   ├── services/
 │   │   │   ├── sheets.ts             # Google Sheets CRUD
-│   │   │   └── line.ts               # LINE Messaging API（Flex Message送信）
+│   │   │   └── line.ts               # Flex Messageビルダー（buildAnnounceMessage）
 │   │   ├── middleware/
 │   │   │   └── adminAuth.ts          # 管理者認証ミドルウェア
 │   │   └── routes/
@@ -141,21 +141,18 @@ Google Sheets APIのCRUDを担当するクラス。
 - 一致あり: 該当行の H列（status）のみを `practices!H{rowNumber}` で上書き
 - 更新後のPracticeオブジェクトを返却
 
-### 2.4 LineService (backend/src/services/line.ts)
+### 2.4 buildAnnounceMessage (backend/src/services/line.ts)
 
-LINE Messaging APIの操作を担当するクラス。
+Flex Message JSONを構築して返す純粋関数。LINE Messaging API / Bot チャネルは不要。
 
-#### コンストラクタ
-- `@line/bot-sdk` の `MessagingApiClient` を `LINE_CHANNEL_ACCESS_TOKEN` で初期化
-
-#### announceToGroup(practice, liffId): Promise\<void\>
+#### buildAnnounceMessage(practice, liffId): Record\<string, unknown\>
 - LIFFアプリURL: `https://liff.line.me/{liffId}?practiceId={practice.id}`
 - 曜日の算出: `date` をパースして日本語曜日を取得
 - Flex Message（Bubble型）を構築:
   - header: 緑背景 `#06C755`、白文字でタイトルを表示
   - body: 日時・場所を行表示、descriptionがあれば追加
   - footer: 「参加・不参加を登録する」URIアクションボタン（緑、LIFFリンク）
-- `client.pushMessage({ to: LINE_GROUP_ID, messages: [message] })` で送信
+- 構築したオブジェクトを返す（送信はフロントエンドの `liff.shareTargetPicker()` が行う）
 
 ### 2.5 管理者認証ミドルウェア (backend/src/middleware/adminAuth.ts)
 
@@ -176,7 +173,7 @@ LINE Messaging APIの操作を担当するクラス。
 | GET / | /api/practices | なし | `sheets.getPractices()` |
 | POST / | /api/practices | requireAdmin | バリデーション → `sheets.createPractice()` |
 | PATCH /:id/status | /api/practices/:id/status | requireAdmin | バリデーション → `sheets.updatePracticeStatus()` |
-| POST /:id/announce | /api/practices/:id/announce | requireAdmin | 練習ID検索 → `lineService.announceToGroup()` |
+| POST /:id/announce | /api/practices/:id/announce | requireAdmin | 練習ID検索 → `buildAnnounceMessage()` → `{ message }` を返す |
 
 statusバリデーション（PATCH）: `'開催'` / `'雨天中止'` / `'中止'` のいずれかでなければ400。
 
@@ -463,7 +460,6 @@ const CANCEL_OPTIONS = [
 | cors | ^2.8.5 | CORS設定 |
 | dotenv | ^16.4.5 | 環境変数読み込み |
 | googleapis | ^140.0.0 | Google Sheets API |
-| @line/bot-sdk | ^9.3.0 | LINE Messaging API |
 | uuid | ^9.0.0 | UUID v4生成 |
 | tsx | ^4.7.3 | TypeScript実行（dev） |
 | typescript | ^5.4.5 | コンパイラ |
