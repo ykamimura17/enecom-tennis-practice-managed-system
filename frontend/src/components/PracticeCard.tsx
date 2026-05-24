@@ -25,7 +25,7 @@ export function PracticeCard({ practice, myAttendance, onChangeStatus, loading, 
           <span style={styles.cancelledBadge}>{practice.status}</span>
         )}
       </div>
-      <div style={styles.info}>{formattedDate} {practice.time}〜</div>
+      <div style={styles.info}>{formattedDate} {practice.time}〜{practice.endTime ?? ''}</div>
       <div style={styles.info}>{practice.location}</div>
       {practice.description && (
         <div style={styles.description}>{practice.description}</div>

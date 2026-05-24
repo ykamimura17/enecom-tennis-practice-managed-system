@@ -51,16 +51,13 @@ export function CreatePracticeForm({ onSubmit, onClose, initialValues }: Props) 
             <label style={styles.label}>日付</label>
             <input type="date" style={styles.input} value={date} onChange={e => setDate(e.target.value)} required />
           </div>
-          <div style={styles.timeRow}>
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>開始時間</label>
-              <input type="time" style={styles.input} value={time} onChange={e => setTime(e.target.value)} required />
-            </div>
-            <div style={styles.timeSep}>〜</div>
-            <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>終了時間（任意）</label>
-              <input type="time" style={styles.input} value={endTime} onChange={e => setEndTime(e.target.value)} />
-            </div>
+          <div style={styles.field}>
+            <label style={styles.label}>開始時間</label>
+            <input type="time" style={styles.input} value={time} onChange={e => setTime(e.target.value)} required />
+          </div>
+          <div style={styles.field}>
+            <label style={styles.label}>終了時間（任意）</label>
+            <input type="time" style={styles.input} value={endTime} onChange={e => setEndTime(e.target.value)} />
           </div>
           <div style={styles.field}>
             <label style={styles.label}>場所</label>
@@ -117,18 +114,6 @@ const styles = {
     fontSize: 15,
     boxSizing: 'border-box' as const,
   } as React.CSSProperties,
-  timeRow: {
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: 8,
-    marginBottom: 12,
-  } as React.CSSProperties,
-  timeSep: {
-    fontSize: 16,
-    color: '#888',
-    paddingBottom: 10,
-    flexShrink: 0,
-  },
   error: { color: '#e53e3e', fontSize: 13 },
   footer: { display: 'flex', gap: 8, marginTop: 16 },
   cancelBtn: {
