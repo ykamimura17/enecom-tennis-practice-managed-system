@@ -78,7 +78,7 @@ export default function App() {
     <div style={styles.app}>
       {/* ヘッダー */}
       <header style={styles.header}>
-        <span style={styles.headerTitle}>⚽ 練習管理</span>
+        <span style={styles.headerTitle}>🎾 練習管理</span>
         <div style={styles.headerRight}>
           <button style={styles.bellBtn} onClick={handleOpenNotifications} aria-label="お知らせ">
             <BellIcon />

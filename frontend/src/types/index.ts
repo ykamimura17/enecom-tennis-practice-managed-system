@@ -5,6 +5,7 @@ export interface Practice {
   title: string;
   date: string;
   time: string;
+  endTime?: string;
   location: string;
   description: string;
   createdAt: string;

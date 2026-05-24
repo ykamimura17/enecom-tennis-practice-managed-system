@@ -13,6 +13,7 @@ interface Props {
 export function AdminPage({ userInfo, onPracticeCreated }: Props) {
   const [practices, setPractices] = useState<Practice[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingPractice, setEditingPractice] = useState<Practice | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -34,6 +35,13 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
     await api.createPractice(userInfo.userId, data);
     await load();
     onPracticeCreated?.();
+  };
+
+  const handleUpdate = async (data: Omit<Practice, 'id' | 'createdAt' | 'status'>) => {
+    if (!editingPractice) return;
+    await api.updatePractice(userInfo.userId, editingPractice.id, data);
+    await load();
+    setEditingPractice(null);
   };
 
   const handleAnnounce = async (practiceId: string) => {
@@ -72,6 +80,7 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
           userId={userInfo.userId}
           onAnnounce={handleAnnounce}
           onStatusChange={handleStatusChange}
+          onEdit={setEditingPractice}
         />
       ))}
 
@@ -79,6 +88,21 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
         <CreatePracticeForm
           onSubmit={handleCreate}
           onClose={() => setShowForm(false)}
+        />
+      )}
+
+      {editingPractice && (
+        <CreatePracticeForm
+          initialValues={{
+            title: editingPractice.title,
+            date: editingPractice.date,
+            time: editingPractice.time,
+            endTime: editingPractice.endTime,
+            location: editingPractice.location,
+            description: editingPractice.description,
+          }}
+          onSubmit={handleUpdate}
+          onClose={() => setEditingPractice(null)}
         />
       )}
     </div>

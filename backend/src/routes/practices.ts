@@ -19,16 +19,31 @@ export function createPracticesRouter(sheets: SheetsService) {
   });
 
   router.post('/', requireAdmin, async (req, res) => {
-    const { title, date, time, location, description } = req.body;
+    const { title, date, time, endTime, location, description } = req.body;
     if (!title || !date || !time || !location) {
       res.status(400).json({ error: 'title, date, time, location は必須です' });
       return;
     }
     try {
-      const practice = await sheets.createPractice({ title, date, time, location, description: description ?? '' });
+      const practice = await sheets.createPractice({ title, date, time, endTime, location, description: description ?? '' });
       res.status(201).json(practice);
     } catch {
       res.status(500).json({ error: 'サーバーエラーが発生しました' });
+    }
+  });
+
+  router.put('/:id', requireAdmin, async (req, res) => {
+    const { title, date, time, endTime, location, description } = req.body;
+    if (!title || !date || !time || !location) {
+      res.status(400).json({ error: 'title, date, time, location は必須です' });
+      return;
+    }
+    try {
+      const practice = await sheets.updatePractice(req.params.id, { title, date, time, endTime, location, description: description ?? '' });
+      res.json(practice);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      res.status(msg === '練習が見つかりません' ? 404 : 500).json({ error: msg || 'サーバーエラーが発生しました' });
     }
   });
 

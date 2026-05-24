@@ -76,6 +76,20 @@ export const api = {
     });
   },
 
+  updatePractice(userId: string, practiceId: string, data: Omit<Practice, 'id' | 'createdAt' | 'status'>): Promise<Practice> {
+    if (IS_MOCK) {
+      const idx = mockPractices.findIndex(p => p.id === practiceId);
+      if (idx < 0) return Promise.reject(new Error('練習が見つかりません'));
+      mockPractices[idx] = { ...mockPractices[idx], ...data };
+      return Promise.resolve(mockPractices[idx]);
+    }
+    return request(`/api/practices/${practiceId}`, {
+      method: 'PUT',
+      headers: { 'x-line-user-id': userId },
+      body: JSON.stringify(data),
+    });
+  },
+
   updatePracticeStatus(userId: string, practiceId: string, status: PracticeStatus): Promise<Practice> {
     if (IS_MOCK) {
       const idx = mockPractices.findIndex(p => p.id === practiceId);

@@ -1,33 +1,38 @@
 import { useState } from 'react';
 import { Practice } from '../types';
 
+type FormData = Omit<Practice, 'id' | 'createdAt' | 'status'>;
+
 interface Props {
-  onSubmit: (data: Omit<Practice, 'id' | 'createdAt' | 'status'>) => Promise<void>;
+  onSubmit: (data: FormData) => Promise<void>;
   onClose: () => void;
+  initialValues?: FormData;
 }
 
-export function CreatePracticeForm({ onSubmit, onClose }: Props) {
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
+export function CreatePracticeForm({ onSubmit, onClose, initialValues }: Props) {
+  const isEdit = !!initialValues;
+  const [title, setTitle] = useState(initialValues?.title ?? '');
+  const [date, setDate] = useState(initialValues?.date ?? '');
+  const [time, setTime] = useState(initialValues?.time ?? '');
+  const [endTime, setEndTime] = useState(initialValues?.endTime ?? '');
+  const [location, setLocation] = useState(initialValues?.location ?? '');
+  const [description, setDescription] = useState(initialValues?.description ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date || !time || !location) {
-      setError('タイトル・日付・時間・場所は必須です');
+      setError('タイトル・日付・開始時間・場所は必須です');
       return;
     }
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit({ title, date, time, location, description });
+      await onSubmit({ title, date, time, endTime: endTime || undefined, location, description });
       onClose();
     } catch {
-      setError('作成に失敗しました');
+      setError(isEdit ? '更新に失敗しました' : '作成に失敗しました');
     } finally {
       setSubmitting(false);
     }
@@ -36,7 +41,7 @@ export function CreatePracticeForm({ onSubmit, onClose }: Props) {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <h2 style={styles.heading}>練習を追加</h2>
+        <h2 style={styles.heading}>{isEdit ? '練習を編集' : '練習を追加'}</h2>
         <form onSubmit={handleSubmit}>
           <div style={styles.field}>
             <label style={styles.label}>タイトル</label>
@@ -46,9 +51,16 @@ export function CreatePracticeForm({ onSubmit, onClose }: Props) {
             <label style={styles.label}>日付</label>
             <input type="date" style={styles.input} value={date} onChange={e => setDate(e.target.value)} required />
           </div>
-          <div style={styles.field}>
-            <label style={styles.label}>時間</label>
-            <input type="time" style={styles.input} value={time} onChange={e => setTime(e.target.value)} required />
+          <div style={styles.timeRow}>
+            <div style={{ ...styles.field, flex: 1 }}>
+              <label style={styles.label}>開始時間</label>
+              <input type="time" style={styles.input} value={time} onChange={e => setTime(e.target.value)} required />
+            </div>
+            <div style={styles.timeSep}>〜</div>
+            <div style={{ ...styles.field, flex: 1 }}>
+              <label style={styles.label}>終了時間（任意）</label>
+              <input type="time" style={styles.input} value={endTime} onChange={e => setEndTime(e.target.value)} />
+            </div>
           </div>
           <div style={styles.field}>
             <label style={styles.label}>場所</label>
@@ -68,7 +80,7 @@ export function CreatePracticeForm({ onSubmit, onClose }: Props) {
               キャンセル
             </button>
             <button type="submit" style={styles.submitBtn} disabled={submitting}>
-              {submitting ? '作成中...' : '作成'}
+              {submitting ? (isEdit ? '更新中...' : '作成中...') : (isEdit ? '更新' : '作成')}
             </button>
           </div>
         </form>
@@ -105,6 +117,18 @@ const styles = {
     fontSize: 15,
     boxSizing: 'border-box' as const,
   } as React.CSSProperties,
+  timeRow: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: 8,
+    marginBottom: 12,
+  } as React.CSSProperties,
+  timeSep: {
+    fontSize: 16,
+    color: '#888',
+    paddingBottom: 10,
+    flexShrink: 0,
+  },
   error: { color: '#e53e3e', fontSize: 13 },
   footer: { display: 'flex', gap: 8, marginTop: 16 },
   cancelBtn: {

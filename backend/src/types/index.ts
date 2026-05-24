@@ -5,6 +5,7 @@ export interface Practice {
   title: string;
   date: string;        // YYYY-MM-DD
   time: string;        // HH:MM
+  endTime?: string;    // HH:MM (任意)
   location: string;
   description: string;
   createdAt: string;   // ISO 8601

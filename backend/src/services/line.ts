@@ -27,7 +27,7 @@ export function buildAnnounceMessage(practice: Practice, liffId: string): Record
         layout: 'vertical',
         spacing: 'md',
         contents: [
-          makeInfoRow('📅', '日時', `${formattedDate} ${practice.time}〜`),
+          makeInfoRow('📅', '日時', `${formattedDate} ${practice.time}〜${practice.endTime ?? ''}`),
           makeInfoRow('📍', '場所', practice.location),
           ...(practice.description
             ? [{ type: 'box', layout: 'vertical', margin: 'md', contents: [

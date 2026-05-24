@@ -7,6 +7,7 @@ interface Props {
   userId: string;
   onAnnounce: (practiceId: string) => Promise<void>;
   onStatusChange: (practiceId: string, status: PracticeStatus) => void;
+  onEdit: (practice: Practice) => void;
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
@@ -22,7 +23,7 @@ const STATUS_BADGE: Record<PracticeStatus, { label: string; style: React.CSSProp
   '中止':    { label: '中止',    style: { background: '#f0f0f0', color: '#666' } },
 };
 
-export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange }: Props) {
+export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange, onEdit }: Props) {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [announcing, setAnnouncing] = useState(false);
@@ -78,7 +79,7 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
               <span style={{ ...styles.statusBadgeChip, ...badge.style }}>{badge.label}</span>
             )}
           </div>
-          <div style={styles.sub}>{formattedDate} {practice.time}〜 / {practice.location}</div>
+          <div style={styles.sub}>{formattedDate} {practice.time}〜{practice.endTime ?? ''} / {practice.location}</div>
         </div>
 
         <div style={styles.actions}>
@@ -92,12 +93,15 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
             </button>
           ) : (
             <>
+              <button style={styles.editBtn} onClick={() => onEdit(practice)}>
+                編集
+              </button>
               <button
                 style={styles.cancelBtn}
                 onClick={() => setSelectingCancel(v => !v)}
                 disabled={updatingStatus}
               >
-                中止にする
+                中止
               </button>
               <button style={styles.announceBtn} onClick={handleAnnounce} disabled={announcing}>
                 {announcing ? '送信中...' : 'LINE送信'}
@@ -189,6 +193,16 @@ const styles = {
   } as React.CSSProperties,
   sub: { fontSize: 12, color: '#888' },
   actions: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'flex-start' },
+  editBtn: {
+    border: '1px solid #06C755',
+    borderRadius: 8,
+    background: '#fff',
+    color: '#06C755',
+    padding: '5px 10px',
+    fontSize: 12,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap' as const,
+  } as React.CSSProperties,
   cancelBtn: {
     border: '1px solid #ccc',
     borderRadius: 8,

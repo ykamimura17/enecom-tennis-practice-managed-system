@@ -6,7 +6,7 @@ const PRACTICES_SHEET = 'practices';
 const ATTENDANCE_SHEET = 'attendance';
 
 // ヘッダー行
-const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt', 'status'];
+const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt', 'status', 'endTime'];
 const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt'];
 
 export class SheetsService {
@@ -49,7 +49,7 @@ export class SheetsService {
   async getPractices(): Promise<Practice[]> {
     const res = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: `${PRACTICES_SHEET}!A:H`,
+      range: `${PRACTICES_SHEET}!A:I`,
     });
     const rows = res.data.values ?? [];
     return rows.slice(1)
@@ -63,6 +63,7 @@ export class SheetsService {
         description: row[5],
         createdAt:   row[6],
         status:      (row[7] as PracticeStatus) || '開催',
+        endTime:     row[8] || undefined,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }
@@ -76,16 +77,50 @@ export class SheetsService {
     };
     await this.sheets.spreadsheets.values.append({
       spreadsheetId: this.spreadsheetId,
-      range: `${PRACTICES_SHEET}!A:H`,
+      range: `${PRACTICES_SHEET}!A:I`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [[
           practice.id, practice.title, practice.date,
-          practice.time, practice.location, practice.description, practice.createdAt, practice.status,
+          practice.time, practice.location, practice.description,
+          practice.createdAt, practice.status, practice.endTime ?? '',
         ]],
       },
     });
     return practice;
+  }
+
+  async updatePractice(id: string, data: Omit<Practice, 'id' | 'createdAt' | 'status'>): Promise<Practice> {
+    const res = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `${PRACTICES_SHEET}!A:I`,
+    });
+    const rows = res.data.values ?? [];
+    const rowIndex = rows.findIndex((row, i) => i > 0 && row[0] === id);
+    if (rowIndex < 1) throw new Error('練習が見つかりません');
+
+    const existing = rows[rowIndex];
+    const updated: Practice = {
+      id,
+      ...data,
+      createdAt: existing[6],
+      status: (existing[7] as PracticeStatus) || '開催',
+    };
+
+    await this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.spreadsheetId,
+      range: `${PRACTICES_SHEET}!A${rowIndex + 1}:I${rowIndex + 1}`,
+      valueInputOption: 'RAW',
+      requestBody: {
+        values: [[
+          updated.id, updated.title, updated.date,
+          updated.time, updated.location, updated.description,
+          updated.createdAt, updated.status, updated.endTime ?? '',
+        ]],
+      },
+    });
+
+    return updated;
   }
 
   async updatePracticeStatus(id: string, status: PracticeStatus): Promise<Practice> {
