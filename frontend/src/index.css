@@ -1,0 +1,14 @@
+* {
+  box-sizing: border-box;
+}
+
+/* iOSでdate/timeインプットがviewport幅を使う問題を修正 */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
