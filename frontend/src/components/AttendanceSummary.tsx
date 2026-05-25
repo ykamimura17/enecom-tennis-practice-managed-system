@@ -27,6 +27,7 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [announcing, setAnnouncing] = useState(false);
+  const [confirmingAnnounce, setConfirmingAnnounce] = useState(false);
   const [selectingCancel, setSelectingCancel] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -43,11 +44,10 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
   const badge = STATUS_BADGE[practice.status];
 
   const handleAnnounce = async () => {
-    if (!window.confirm(`「${practice.title}」の案内をLINEグループに送信しますか？`)) return;
+    setConfirmingAnnounce(false);
     setAnnouncing(true);
     try {
       await onAnnounce(practice.id);
-      alert('送信しました');
     } catch {
       alert('送信に失敗しました');
     } finally {
@@ -103,13 +103,32 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
               >
                 中止
               </button>
-              <button style={styles.announceBtn} onClick={handleAnnounce} disabled={announcing}>
+              <button
+                style={styles.announceBtn}
+                onClick={() => setConfirmingAnnounce(v => !v)}
+                disabled={announcing}
+              >
                 {announcing ? '送信中...' : 'LINE送信'}
               </button>
             </>
           )}
         </div>
       </div>
+
+      {/* LINE送信確認（インライン展開） */}
+      {confirmingAnnounce && (
+        <div style={styles.cancelPicker}>
+          <span style={styles.cancelPickerLabel}>LINEグループに練習案内を送信しますか？</span>
+          <div style={styles.cancelPickerBtns}>
+            <button style={styles.announceConfirmBtn} onClick={handleAnnounce}>
+              送信する
+            </button>
+            <button style={styles.cancelAbortBtn} onClick={() => setConfirmingAnnounce(false)}>
+              キャンセル
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 中止理由選択（インライン展開） */}
       {selectingCancel && (
@@ -248,6 +267,16 @@ const styles = {
     marginBottom: 8,
   },
   cancelPickerBtns: { display: 'flex', gap: 8, flexWrap: 'wrap' as const },
+  announceConfirmBtn: {
+    border: 'none',
+    borderRadius: 8,
+    background: '#06C755',
+    color: '#fff',
+    padding: '6px 16px',
+    fontSize: 13,
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  } as React.CSSProperties,
   cancelOptionBtn: {
     border: '1px solid #ccc',
     borderRadius: 8,
