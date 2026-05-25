@@ -44,8 +44,14 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
     setEditingPractice(null);
   };
 
-  const handleAnnounce = async (practiceId: string) => {
+  // 「LINE送信」タップ時にメッセージを先取りする（API呼び出しはここで完了させる）
+  const handleFetchAnnounce = async (practiceId: string): Promise<Record<string, unknown>> => {
     const { message } = await api.announcePractice(userInfo.userId, practiceId);
+    return message;
+  };
+
+  // 「送信する」タップ時にユーザー操作と同期して呼ぶ（iOS WebKit 制約対応）
+  const handleShare = async (message: Record<string, unknown>) => {
     if (import.meta.env.VITE_MOCK_MODE === 'true') {
       alert('[モック] shareTargetPicker をスキップしました');
       return;
@@ -78,7 +84,8 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
           key={p.id}
           practice={p}
           userId={userInfo.userId}
-          onAnnounce={handleAnnounce}
+          onFetchAnnounce={handleFetchAnnounce}
+          onShare={handleShare}
           onStatusChange={handleStatusChange}
           onEdit={setEditingPractice}
         />

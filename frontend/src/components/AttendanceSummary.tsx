@@ -5,7 +5,8 @@ import { Practice, PracticeStatus, Attendance } from '../types';
 interface Props {
   practice: Practice;
   userId: string;
-  onAnnounce: (practiceId: string) => Promise<void>;
+  onFetchAnnounce: (practiceId: string) => Promise<Record<string, unknown>>;
+  onShare: (message: Record<string, unknown>) => Promise<void>;
   onStatusChange: (practiceId: string, status: PracticeStatus) => void;
   onEdit: (practice: Practice) => void;
 }
@@ -23,11 +24,12 @@ const STATUS_BADGE: Record<PracticeStatus, { label: string; style: React.CSSProp
   '中止':    { label: '中止',    style: { background: '#f0f0f0', color: '#666' } },
 };
 
-export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange, onEdit }: Props) {
+export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, onStatusChange, onEdit }: Props) {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [announcing, setAnnouncing] = useState(false);
   const [confirmingAnnounce, setConfirmingAnnounce] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<Record<string, unknown> | null>(null);
   const [selectingCancel, setSelectingCancel] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
@@ -43,15 +45,32 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
   const isCancelled = practice.status !== '開催';
   const badge = STATUS_BADGE[practice.status];
 
-  const handleAnnounce = async () => {
+  // 「LINE送信」タップ → API呼び出しでメッセージ先取り → 確認UI表示
+  const handleAnnounceClick = async () => {
+    setAnnouncing(true);
+    try {
+      const message = await onFetchAnnounce(practice.id);
+      setPendingMessage(message);
+      setConfirmingAnnounce(true);
+    } catch {
+      alert('メッセージの取得に失敗しました');
+    } finally {
+      setAnnouncing(false);
+    }
+  };
+
+  // 「送信する」タップ → ユーザー操作と同期して shareTargetPicker を呼ぶ
+  const handleAnnounceConfirm = async () => {
+    if (!pendingMessage) return;
     setConfirmingAnnounce(false);
     setAnnouncing(true);
     try {
-      await onAnnounce(practice.id);
+      await onShare(pendingMessage);
     } catch {
       alert('送信に失敗しました');
     } finally {
       setAnnouncing(false);
+      setPendingMessage(null);
     }
   };
 
@@ -105,10 +124,10 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
               </button>
               <button
                 style={styles.announceBtn}
-                onClick={() => setConfirmingAnnounce(v => !v)}
+                onClick={handleAnnounceClick}
                 disabled={announcing}
               >
-                {announcing ? '送信中...' : 'LINE送信'}
+                {announcing ? '取得中...' : 'LINE送信'}
               </button>
             </>
           )}
@@ -120,7 +139,7 @@ export function AttendanceSummary({ practice, userId, onAnnounce, onStatusChange
         <div style={styles.cancelPicker}>
           <span style={styles.cancelPickerLabel}>LINEグループに練習案内を送信しますか？</span>
           <div style={styles.cancelPickerBtns}>
-            <button style={styles.announceConfirmBtn} onClick={handleAnnounce}>
+            <button style={styles.announceConfirmBtn} onClick={handleAnnounceConfirm}>
               送信する
             </button>
             <button style={styles.cancelAbortBtn} onClick={() => setConfirmingAnnounce(false)}>
