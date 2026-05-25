@@ -59,19 +59,14 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
     }
   };
 
-  // 「送信する」タップ → ユーザー操作と同期して shareTargetPicker を呼ぶ
-  const handleAnnounceConfirm = async () => {
+  // 「送信する」タップ → async を使わず同期的に shareTargetPicker を起動する
+  const handleAnnounceConfirm = () => {
     if (!pendingMessage) return;
+    const message = pendingMessage;
     setConfirmingAnnounce(false);
-    setAnnouncing(true);
-    try {
-      await onShare(pendingMessage);
-    } catch {
-      alert('送信に失敗しました');
-    } finally {
-      setAnnouncing(false);
-      setPendingMessage(null);
-    }
+    setPendingMessage(null);
+    // await を挟まずに起動することで iOS のユーザー操作コンテキストを維持する
+    onShare(message).catch(() => alert('送信に失敗しました'));
   };
 
   const handleSetStatus = async (next: PracticeStatus) => {

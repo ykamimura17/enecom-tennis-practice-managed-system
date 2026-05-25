@@ -51,17 +51,17 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
   };
 
   // 「送信する」タップ時にユーザー操作と同期して呼ぶ（iOS WebKit 制約対応）
-  const handleShare = async (message: Record<string, unknown>) => {
+  const handleShare = (message: Record<string, unknown>): Promise<void> => {
     if (import.meta.env.VITE_MOCK_MODE === 'true') {
       alert('[モック] shareTargetPicker をスキップしました');
-      return;
+      return Promise.resolve();
     }
     if (!liff.isApiAvailable('shareTargetPicker')) {
       alert('この機能はLINEアプリ内でのみ使用できます');
-      return;
+      return Promise.resolve();
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await liff.shareTargetPicker([message as any]);
+    return liff.shareTargetPicker([message as any]).then(() => {});
   };
 
   return (
