@@ -86,14 +86,11 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
     <div style={{ ...styles.card, ...(isCancelled ? styles.cardCancelled : {}) }}>
       {/* ヘッダー */}
       <div style={styles.header}>
-        <div style={styles.titleArea}>
-          <div style={styles.titleRow}>
-            <span style={styles.title}>{practice.title}</span>
-            {isCancelled && (
-              <span style={{ ...styles.statusBadgeChip, ...badge.style }}>{badge.label}</span>
-            )}
-          </div>
-          <div style={styles.sub}>{formattedDate} {practice.time}〜{practice.endTime ?? ''} / {practice.location}</div>
+        <div style={styles.titleRow}>
+          <span style={styles.title}>{practice.title}</span>
+          {isCancelled && (
+            <span style={{ ...styles.statusBadgeChip, ...badge.style }}>{badge.label}</span>
+          )}
         </div>
 
         <div style={styles.actions}>
@@ -128,6 +125,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
           )}
         </div>
       </div>
+      <div style={styles.sub}>{formattedDate} {practice.time}〜{practice.endTime ?? ''} / {practice.location}</div>
 
       {/* LINE送信確認（インライン展開） */}
       {confirmingAnnounce && (
@@ -210,12 +208,11 @@ const styles = {
   header: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 4,
   } as React.CSSProperties,
-  titleArea: { flex: 1, minWidth: 0 },
-  titleRow: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' as const, marginBottom: 4 },
+  titleRow: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' as const, flex: 1, minWidth: 0 },
   title: { fontSize: 15, fontWeight: 'bold', color: '#333' },
   statusBadgeChip: {
     fontSize: 11,
@@ -224,7 +221,7 @@ const styles = {
     fontWeight: 'normal',
     flexShrink: 0,
   } as React.CSSProperties,
-  sub: { fontSize: 12, color: '#888' },
+  sub: { fontSize: 12, color: '#888', marginBottom: 12 },
   actions: { display: 'flex', gap: 6, flexShrink: 0, alignItems: 'flex-start' },
   editBtn: {
     border: '1px solid #06C755',

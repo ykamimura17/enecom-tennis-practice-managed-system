@@ -51,13 +51,15 @@ export function CreatePracticeForm({ onSubmit, onClose, initialValues }: Props) 
             <label style={styles.label}>日付</label>
             <input type="date" style={styles.input} value={date} onChange={e => setDate(e.target.value)} required />
           </div>
-          <div style={styles.field}>
-            <label style={styles.label}>開始時間</label>
-            <input type="time" style={styles.input} value={time} onChange={e => setTime(e.target.value)} required />
-          </div>
-          <div style={styles.field}>
-            <label style={styles.label}>終了時間（任意）</label>
-            <input type="time" style={styles.input} value={endTime} onChange={e => setEndTime(e.target.value)} />
+          <div style={styles.timeRow}>
+            <div style={styles.timeField}>
+              <label style={styles.label}>開始時間</label>
+              <input type="time" style={styles.input} value={time} onChange={e => setTime(e.target.value)} required />
+            </div>
+            <div style={styles.timeField}>
+              <label style={styles.label}>終了時間（任意）</label>
+              <input type="time" style={styles.input} value={endTime} onChange={e => setEndTime(e.target.value)} />
+            </div>
           </div>
           <div style={styles.field}>
             <label style={styles.label}>場所</label>
@@ -105,6 +107,8 @@ const styles = {
   },
   heading: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
   field: { marginBottom: 12 },
+  timeRow: { display: 'flex', gap: 8, marginBottom: 12 },
+  timeField: { flex: 1, minWidth: 0 },
   label: { display: 'block', fontSize: 13, color: '#555', marginBottom: 4 },
   input: {
     width: '100%',
