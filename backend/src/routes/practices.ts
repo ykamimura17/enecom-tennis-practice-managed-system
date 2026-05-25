@@ -64,7 +64,7 @@ export function createPracticesRouter(sheets: SheetsService) {
 
   // Flex Message を返す。フロントエンドが liff.shareTargetPicker() で送信する。
   router.post('/:id/announce', requireAdmin, async (req, res) => {
-    const liffId = process.env.VITE_LIFF_ID ?? '';
+    const liffId = process.env.LIFF_ID ?? '';
     try {
       const practices = await sheets.getPractices();
       const practice = practices.find(p => p.id === req.params.id);
