@@ -21,8 +21,7 @@ export function PracticeCard({ practice, myAttendance, onChangeStatus, onChangeC
   const isCancelled = practice.status !== '開催';
   const isUnanswered = !isCancelled && !readonly && !currentStatus;
 
-  // 未回答は開いた状態、回答済みは閉じた状態で初期化
-  const [open, setOpen] = useState(isUnanswered);
+  const [open, setOpen] = useState(false);
 
   return (
     <div style={{ ...styles.card, ...(isCancelled ? styles.cardCancelled : {}) }}>
