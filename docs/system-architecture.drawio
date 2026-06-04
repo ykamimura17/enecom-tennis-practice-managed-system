@@ -1,0 +1,222 @@
+<mxfile host="app.diagrams.net" modified="2026-06-04T00:00:00.000Z" agent="Claude" version="21.0.0" type="device">
+  <diagram id="system-architecture" name="システム構成図">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="エネコムテニス練習管理システム - システム構成図" style="text;html=1;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- LINE Platform Group -->
+        <mxCell id="line-group" value="LINE プラットフォーム" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=14;verticalAlign=top;spacingTop=5;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="200" y="80" width="1000" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- LINE App -->
+        <mxCell id="line-app" value="LINE App&#xa;(iOS / Android)" style="shape=mxgraph.ios7.icons.smartphone;html=1;whiteSpace=wrap;fillColor=#06C755;fontColor=#ffffff;strokeColor=#06C755;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="110" width="100" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- LIFF SDK -->
+        <mxCell id="liff-sdk" value="LIFF SDK&#xa;認証・プロフィル取得" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="115" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- shareTargetPicker -->
+        <mxCell id="share-picker" value="shareTargetPicker()&#xa;グループへの告知送信&#xa;(Flex Message)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="115" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: LINE App -> LIFF SDK -->
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="line-app" target="liff-sdk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: LIFF SDK -> shareTargetPicker -->
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="liff-sdk" target="share-picker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend Group -->
+        <mxCell id="frontend-group" value="フロントエンド (React SPA / Vite)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="200" y="290" width="1000" height="220" as="geometry" />
+        </mxCell>
+
+        <!-- App.tsx -->
+        <mxCell id="app-tsx" value="App.tsx&#xa;タブ切替・通知管理&#xa;ヘッダー" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="330" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- MemberPage -->
+        <mxCell id="member-page" value="MemberPage&#xa;練習一覧・出欠回答&#xa;(PracticeCard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="330" width="170" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- AdminPage -->
+        <mxCell id="admin-page" value="AdminPage&#xa;練習管理・出欠確認&#xa;LINE送信&#xa;(AttendanceSummary)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="630" y="330" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- useLiff Hook -->
+        <mxCell id="use-liff" value="useLiff Hook&#xa;LIFF初期化・認証" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="420" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- API Client -->
+        <mxCell id="api-client" value="API Client&#xa;(client.ts)&#xa;REST通信・モック対応" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="420" width="170" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Components -->
+        <mxCell id="components" value="Components&#xa;CreatePracticeForm&#xa;NotificationPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="330" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Deploy label frontend -->
+        <mxCell id="deploy-fe" value="デプロイ: Vercel (静的ホスティング)" style="text;html=1;fontSize=10;fontStyle=2;align=right;fontColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="900" y="460" width="280" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: LINE Platform -> Frontend -->
+        <mxCell id="arrow3" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="220" as="sourcePoint" />
+            <mxPoint x="700" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Backend Group -->
+        <mxCell id="backend-group" value="バックエンド (Node.js / Express API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=14;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="200" y="580" width="1000" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- Middleware -->
+        <mxCell id="middleware" value="ミドルウェア&#xa;CORS | JSON Parser | 管理者認証 (adminAuth)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="620" width="950" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Routes -->
+        <mxCell id="routes" value="Routes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="230" y="680" width="440" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Practice Routes -->
+        <mxCell id="practice-routes" value="practices.ts&#xa;GET  /api/practices&#xa;POST /api/practices&#xa;PUT  /api/practices/:id&#xa;PATCH /api/practices/:id/status&#xa;POST /api/practices/:id/announce" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=9;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="245" y="710" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Attendance Routes -->
+        <mxCell id="attendance-routes" value="attendance.ts&#xa;GET  /api/attendance/:practiceId&#xa;POST /api/attendance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=9;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="460" y="710" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Services -->
+        <mxCell id="services" value="Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;fontSize=12;verticalAlign=top;spacingTop=3;" vertex="1" parent="1">
+          <mxGeometry x="730" y="680" width="450" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- SheetsService -->
+        <mxCell id="sheets-service" value="SheetsService&#xa;(sheets.ts)&#xa;&#xa;Google Sheets CRUD&#xa;練習・出欠データ操作" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="745" y="710" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- LineService -->
+        <mxCell id="line-service" value="LineService&#xa;(line.ts)&#xa;&#xa;Flex Message 生成&#xa;告知メッセージ組立" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;fontSize=10;fontStyle=0;" vertex="1" parent="1">
+          <mxGeometry x="945" y="710" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Deploy label backend -->
+        <mxCell id="deploy-be" value="デプロイ: Render / Railway / Cloud Run / Vercel Serverless" style="text;html=1;fontSize=10;fontStyle=2;align=right;fontColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="820" y="820" width="360" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Frontend -> Backend -->
+        <mxCell id="arrow4" value="REST API (HTTPS)&#xa;Header: x-line-user-id" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="510" as="sourcePoint" />
+            <mxPoint x="700" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Google Sheets Group -->
+        <mxCell id="sheets-group" value="Google Sheets (データストア)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=14;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="200" y="920" width="1000" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- Practices Sheet -->
+        <mxCell id="practices-sheet" value="practicesSheet (練習情報)&#xa;&#xa;id | title | date | time&#xa;location | description&#xa;createdAt | status | endTime" style="shape=table;startSize=0;container=0;collapsible=0;childLayout=tableLayout;fillColor=#ffffff;strokeColor=#82b366;rounded=1;fontSize=11;fontStyle=0;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="280" y="970" width="350" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Attendance Sheet -->
+        <mxCell id="attendance-sheet" value="attendanceSheet (出欠情報)&#xa;&#xa;id | practiceId | lineUserId&#xa;displayName | status&#xa;updatedAt | carpool" style="shape=table;startSize=0;container=0;collapsible=0;childLayout=tableLayout;fillColor=#ffffff;strokeColor=#82b366;rounded=1;fontSize=11;fontStyle=0;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="770" y="970" width="350" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Backend -> Google Sheets -->
+        <mxCell id="arrow5" value="Google Sheets API&#xa;(JWT サービスアカウント認証)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;fontSize=10;fontStyle=1;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="840" as="sourcePoint" />
+            <mxPoint x="700" y="920" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow: Routes -> Services -->
+        <mxCell id="arrow6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=0;entryY=0.5;dashed=1;" edge="1" parent="1" source="routes" target="services">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-title" value="凡例" style="text;html=1;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="80" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend1" value="" style="rounded=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="110" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend1-text" value="外部サービス" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="110" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend2" value="" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="140" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2-text" value="フロントエンド" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="140" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend3" value="" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="170" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend3-text" value="バックエンド" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="170" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend4" value="" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="200" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend4-text" value="LINE SDK / MW" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="200" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend5" value="" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="230" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend5-text" value="ページ/コンポーネント" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="230" width="130" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend6" value="" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="260" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend6-text" value="Hook / API層" style="text;html=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="260" width="100" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
