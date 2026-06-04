@@ -1,13 +1,13 @@
 import { google } from 'googleapis';
 import { v4 as uuidv4 } from 'uuid';
-import { Practice, PracticeStatus, Attendance, AttendanceStatus } from '../types';
+import { Practice, PracticeStatus, Attendance, AttendanceStatus, CarpoolStatus } from '../types';
 
 const PRACTICES_SHEET = 'practices';
 const ATTENDANCE_SHEET = 'attendance';
 
 // ヘッダー行
 const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt', 'status', 'endTime'];
-const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt'];
+const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt', 'carpool'];
 
 export class SheetsService {
   private sheets;
@@ -151,7 +151,7 @@ export class SheetsService {
   async getAttendance(practiceId: string): Promise<Attendance[]> {
     const res = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: `${ATTENDANCE_SHEET}!A:F`,
+      range: `${ATTENDANCE_SHEET}!A:G`,
     });
     const rows = res.data.values ?? [];
     return rows.slice(1)
@@ -163,13 +163,14 @@ export class SheetsService {
         displayName: row[3],
         status:      row[4] as AttendanceStatus,
         updatedAt:   row[5],
+        carpool:     (row[6] as CarpoolStatus) || undefined,
       }));
   }
 
   async upsertAttendance(data: Omit<Attendance, 'id' | 'updatedAt'>): Promise<Attendance> {
     const res = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: `${ATTENDANCE_SHEET}!A:F`,
+      range: `${ATTENDANCE_SHEET}!A:G`,
     });
     const rows = res.data.values ?? [];
 
@@ -178,27 +179,30 @@ export class SheetsService {
       (row, i) => i > 0 && row[1] === data.practiceId && row[2] === data.lineUserId
     );
 
+    // 配車（送迎）の要否は参加者のみ意味を持つため、参加以外は強制的に空にする
+    const carpool = data.status === '参加' ? data.carpool : undefined;
     const record: Attendance = {
       id: rowIndex >= 1 ? rows[rowIndex][0] : uuidv4(),
       ...data,
+      carpool,
       updatedAt: new Date().toISOString(),
     };
     const values = [[
       record.id, record.practiceId, record.lineUserId,
-      record.displayName, record.status, record.updatedAt,
+      record.displayName, record.status, record.updatedAt, record.carpool ?? '',
     ]];
 
     if (rowIndex >= 1) {
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `${ATTENDANCE_SHEET}!A${rowIndex + 1}:F${rowIndex + 1}`,
+        range: `${ATTENDANCE_SHEET}!A${rowIndex + 1}:G${rowIndex + 1}`,
         valueInputOption: 'RAW',
         requestBody: { values },
       });
     } else {
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: `${ATTENDANCE_SHEET}!A:F`,
+        range: `${ATTENDANCE_SHEET}!A:G`,
         valueInputOption: 'RAW',
         requestBody: { values },
       });

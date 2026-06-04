@@ -1,4 +1,4 @@
-import { Practice, PracticeStatus, Attendance, AttendanceStatus } from '../types';
+import { Practice, PracticeStatus, Attendance, AttendanceStatus, CarpoolStatus } from '../types';
 import { MOCK_PRACTICES, MOCK_ATTENDANCES, MOCK_USER } from '../mocks/data';
 
 const IS_MOCK = import.meta.env.VITE_MOCK_MODE === 'true';
@@ -45,12 +45,16 @@ export const api = {
     displayName: string,
     practiceId: string,
     status: AttendanceStatus,
+    carpool?: CarpoolStatus,
   ): Promise<Attendance> {
+    // 配車（送迎）の要否は参加者のみ意味を持つ
+    const effectiveCarpool = status === '参加' ? carpool : undefined;
     if (IS_MOCK) {
       const idx = mockAttendances.findIndex(a => a.practiceId === practiceId && a.lineUserId === lineUserId);
       const record: Attendance = {
         id: idx >= 0 ? mockAttendances[idx].id : `att-${Date.now()}`,
         practiceId, lineUserId, displayName, status,
+        carpool: effectiveCarpool,
         updatedAt: new Date().toISOString(),
       };
       if (idx >= 0) mockAttendances[idx] = record;
@@ -59,7 +63,7 @@ export const api = {
     }
     return request('/api/attendance', {
       method: 'POST',
-      body: JSON.stringify({ practiceId, lineUserId, displayName, status }),
+      body: JSON.stringify({ practiceId, lineUserId, displayName, status, carpool: effectiveCarpool }),
     });
   },
 

@@ -38,6 +38,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
   }, [practice.id]);
 
   const count = (s: string) => attendances.filter(a => a.status === s).length;
+  const carpoolCount = attendances.filter(a => a.status === '参加' && a.carpool === '必要').length;
 
   const d = new Date(practice.date);
   const formattedDate = `${practice.date.replace(/-/g, '/')}（${WEEKDAYS[d.getDay()]}）`;
@@ -168,6 +169,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
         <span style={styles.badge}>参加 {count('参加')}人</span>
         <span style={{ ...styles.badge, ...styles.badgeRed }}>不参加 {count('不参加')}人</span>
         <span style={{ ...styles.badge, ...styles.badgeGray }}>未回答 {count('未回答')}人</span>
+        <span style={{ ...styles.badge, ...styles.badgeBlue }}>配車必要 {carpoolCount}人</span>
         <span style={styles.toggle}>{expanded ? '▲' : '▼'}</span>
       </div>
 
@@ -177,13 +179,23 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
           {attendances.map(a => (
             <div key={a.id} style={styles.row}>
               <span style={styles.name}>{a.displayName}</span>
-              <span style={{
-                ...styles.attendanceBadge,
-                ...(a.status === '参加' ? styles.statusGreen
-                  : a.status === '不参加' ? styles.statusRed
-                  : styles.statusGray),
-              }}>
-                {a.status}
+              <span style={styles.rowBadges}>
+                {a.status === '参加' && a.carpool && (
+                  <span style={{
+                    ...styles.attendanceBadge,
+                    ...(a.carpool === '必要' ? styles.carpoolNeed : styles.statusGray),
+                  }}>
+                    配車{a.carpool}
+                  </span>
+                )}
+                <span style={{
+                  ...styles.attendanceBadge,
+                  ...(a.status === '参加' ? styles.statusGreen
+                    : a.status === '不参加' ? styles.statusRed
+                    : styles.statusGray),
+                }}>
+                  {a.status}
+                </span>
               </span>
             </div>
           ))}
@@ -322,6 +334,7 @@ const styles = {
   } as React.CSSProperties,
   badgeRed: { background: '#fff0f0', color: '#e53e3e' } as React.CSSProperties,
   badgeGray: { background: '#f0f0f0', color: '#888' } as React.CSSProperties,
+  badgeBlue: { background: '#eaf2ff', color: '#2b6cb0' } as React.CSSProperties,
   toggle: { marginLeft: 'auto', fontSize: 12, color: '#888' },
   detail: { marginTop: 12, borderTop: '1px solid #eee', paddingTop: 12 },
   empty: { fontSize: 13, color: '#888', textAlign: 'center' as const },
@@ -334,6 +347,8 @@ const styles = {
     fontSize: 14,
   } as React.CSSProperties,
   name: { color: '#333' },
+  rowBadges: { display: 'flex', gap: 6, alignItems: 'center' } as React.CSSProperties,
+  carpoolNeed: { background: '#eaf2ff', color: '#2b6cb0' } as React.CSSProperties,
   attendanceBadge: {
     fontSize: 12,
     padding: '2px 8px',

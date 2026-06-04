@@ -53,9 +53,9 @@ export const MOCK_PRACTICES: Practice[] = [
 ];
 
 export const MOCK_ATTENDANCES: Attendance[] = [
-  { id: 'att-1', practiceId: 'practice-f1',  lineUserId: 'U_mock_admin', displayName: 'テストユーザー（管理者）', status: '参加',   updatedAt: '2026-05-15T10:00:00.000Z' },
+  { id: 'att-1', practiceId: 'practice-f1',  lineUserId: 'U_mock_admin', displayName: 'テストユーザー（管理者）', status: '参加',   carpool: '不要', updatedAt: '2026-05-15T10:00:00.000Z' },
   { id: 'att-2', practiceId: 'practice-f1',  lineUserId: 'U_member_1',   displayName: '田中太郎',               status: '不参加', updatedAt: '2026-05-15T11:00:00.000Z' },
-  { id: 'att-3', practiceId: 'practice-f1',  lineUserId: 'U_member_2',   displayName: '鈴木花子',               status: '参加',   updatedAt: '2026-05-15T12:00:00.000Z' },
+  { id: 'att-3', practiceId: 'practice-f1',  lineUserId: 'U_member_2',   displayName: '鈴木花子',               status: '参加',   carpool: '必要', updatedAt: '2026-05-15T12:00:00.000Z' },
   { id: 'att-4', practiceId: 'practice-p01', lineUserId: 'U_mock_admin', displayName: 'テストユーザー（管理者）', status: '参加',   updatedAt: '2026-05-11T15:00:00.000Z' },
   { id: 'att-5', practiceId: 'practice-p02', lineUserId: 'U_mock_admin', displayName: 'テストユーザー（管理者）', status: '不参加', updatedAt: '2026-04-27T12:00:00.000Z' },
 ];

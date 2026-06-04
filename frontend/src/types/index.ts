@@ -14,12 +14,15 @@ export interface Practice {
 
 export type AttendanceStatus = '参加' | '不参加' | '未回答';
 
+export type CarpoolStatus = '必要' | '不要';
+
 export interface Attendance {
   id: string;
   practiceId: string;
   lineUserId: string;
   displayName: string;
   status: AttendanceStatus;
+  carpool?: CarpoolStatus;
   updatedAt: string;
 }
 

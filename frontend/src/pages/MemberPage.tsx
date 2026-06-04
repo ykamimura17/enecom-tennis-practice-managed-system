@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
-import { Practice, Attendance, AttendanceStatus, UserInfo } from '../types';
+import { Practice, Attendance, AttendanceStatus, CarpoolStatus, UserInfo } from '../types';
 import { PracticeCard } from '../components/PracticeCard';
 
 interface Props {
@@ -49,6 +49,20 @@ export function MemberPage({ userInfo }: Props) {
     }
   };
 
+  const handleChangeCarpool = async (practiceId: string, carpool: CarpoolStatus) => {
+    setLoadingPracticeId(practiceId);
+    try {
+      const updated = await api.upsertAttendance(
+        userInfo.userId, userInfo.displayName, practiceId, '参加', carpool
+      );
+      setAttendances(prev => ({ ...prev, [practiceId]: updated }));
+    } catch {
+      alert('登録に失敗しました');
+    } finally {
+      setLoadingPracticeId(null);
+    }
+  };
+
   // 今日以降を上に、過去を下に
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = practices.filter(p => p.date >= today);
@@ -75,6 +89,7 @@ export function MemberPage({ userInfo }: Props) {
           practice={p}
           myAttendance={attendances[p.id]}
           onChangeStatus={handleChangeStatus}
+          onChangeCarpool={handleChangeCarpool}
           loading={loadingPracticeId === p.id}
         />
       ))}
@@ -88,6 +103,7 @@ export function MemberPage({ userInfo }: Props) {
               practice={p}
               myAttendance={attendances[p.id]}
               onChangeStatus={handleChangeStatus}
+              onChangeCarpool={handleChangeCarpool}
               loading={loadingPracticeId === p.id}
               readonly
             />
