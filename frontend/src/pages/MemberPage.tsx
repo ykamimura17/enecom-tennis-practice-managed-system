@@ -71,11 +71,6 @@ export function MemberPage({ userInfo }: Props) {
   return (
     <div style={styles.container}>
       <div style={styles.greeting}>
-        <img
-          src={userInfo.pictureUrl ?? 'https://profile.line-scdn.net/0h00000000000000000000000000000000'}
-          style={styles.avatar}
-          alt=""
-        />
         <span>こんにちは、{userInfo.displayName}さん</span>
       </div>
 
