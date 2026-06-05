@@ -35,7 +35,6 @@ export function useLiff(): UseLiffResult {
         setUserInfo({
           userId: profile.userId,
           displayName: profile.displayName,
-          pictureUrl: profile.pictureUrl,
           isAdmin: me.isAdmin,
         });
       } catch (e) {
