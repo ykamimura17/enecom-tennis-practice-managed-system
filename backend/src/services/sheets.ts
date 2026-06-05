@@ -7,7 +7,7 @@ const ATTENDANCE_SHEET = 'attendance';
 
 // ヘッダー行
 const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt', 'status', 'endTime'];
-const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt', 'carpool'];
+const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt', 'carpool', 'actual'];
 
 export class SheetsService {
   private sheets;
@@ -151,7 +151,7 @@ export class SheetsService {
   async getAttendance(practiceId: string): Promise<Attendance[]> {
     const res = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: `${ATTENDANCE_SHEET}!A:G`,
+      range: `${ATTENDANCE_SHEET}!A:H`,
     });
     const rows = res.data.values ?? [];
     return rows.slice(1)
@@ -164,13 +164,14 @@ export class SheetsService {
         status:      row[4] as AttendanceStatus,
         updatedAt:   row[5],
         carpool:     (row[6] as CarpoolStatus) || undefined,
+        actual:      row[7] === 'TRUE' ? true : undefined,
       }));
   }
 
   async upsertAttendance(data: Omit<Attendance, 'id' | 'updatedAt'>): Promise<Attendance> {
     const res = await this.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
-      range: `${ATTENDANCE_SHEET}!A:G`,
+      range: `${ATTENDANCE_SHEET}!A:H`,
     });
     const rows = res.data.values ?? [];
 
@@ -181,32 +182,65 @@ export class SheetsService {
 
     // 配車（送迎）の要否は参加者のみ意味を持つため、参加以外は強制的に空にする
     const carpool = data.status === '参加' ? data.carpool : undefined;
+    // 既存の actual 値を引き継ぐ（メンバー操作で actual は変更しない）
+    const existingActual = rowIndex >= 1 && rows[rowIndex][7] === 'TRUE' ? true : undefined;
     const record: Attendance = {
       id: rowIndex >= 1 ? rows[rowIndex][0] : uuidv4(),
       ...data,
       carpool,
+      actual: existingActual,
       updatedAt: new Date().toISOString(),
     };
     const values = [[
       record.id, record.practiceId, record.lineUserId,
-      record.displayName, record.status, record.updatedAt, record.carpool ?? '',
+      record.displayName, record.status, record.updatedAt,
+      record.carpool ?? '', record.actual ? 'TRUE' : '',
     ]];
 
     if (rowIndex >= 1) {
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `${ATTENDANCE_SHEET}!A${rowIndex + 1}:G${rowIndex + 1}`,
+        range: `${ATTENDANCE_SHEET}!A${rowIndex + 1}:H${rowIndex + 1}`,
         valueInputOption: 'RAW',
         requestBody: { values },
       });
     } else {
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: `${ATTENDANCE_SHEET}!A:G`,
+        range: `${ATTENDANCE_SHEET}!A:H`,
         valueInputOption: 'RAW',
         requestBody: { values },
       });
     }
     return record;
+  }
+
+  async updateActual(id: string, actual: boolean): Promise<Attendance> {
+    const res = await this.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `${ATTENDANCE_SHEET}!A:H`,
+    });
+    const rows = res.data.values ?? [];
+    const rowIndex = rows.findIndex((row, i) => i > 0 && row[0] === id);
+    if (rowIndex < 1) throw new Error('出欠レコードが見つかりません');
+
+    await this.sheets.spreadsheets.values.update({
+      spreadsheetId: this.spreadsheetId,
+      range: `${ATTENDANCE_SHEET}!H${rowIndex + 1}`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [[actual ? 'TRUE' : '']] },
+    });
+
+    const row = rows[rowIndex];
+    return {
+      id:          row[0],
+      practiceId:  row[1],
+      lineUserId:  row[2],
+      displayName: row[3],
+      status:      row[4] as AttendanceStatus,
+      updatedAt:   row[5],
+      carpool:     (row[6] as CarpoolStatus) || undefined,
+      actual:      actual || undefined,
+    };
   }
 }

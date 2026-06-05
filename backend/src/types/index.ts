@@ -23,5 +23,6 @@ export interface Attendance {
   displayName: string;
   status: AttendanceStatus;
   carpool?: CarpoolStatus;  // 配車（送迎）の要否。参加者のみ意味を持つ
+  actual?: boolean;         // 実際に来場したか（管理者のみ更新）
   updatedAt: string;   // ISO 8601
 }

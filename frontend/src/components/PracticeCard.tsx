@@ -200,17 +200,17 @@ const styles = {
   } as React.CSSProperties,
   btnActiveGreen: {
     background: '#06C755',
-    borderColor: '#06C755',
+    border: '2px solid #06C755',
     color: '#fff',
   } as React.CSSProperties,
   btnActiveRed: {
     background: '#e53e3e',
-    borderColor: '#e53e3e',
+    border: '2px solid #e53e3e',
     color: '#fff',
   } as React.CSSProperties,
   btnActiveGray: {
     background: '#888',
-    borderColor: '#888',
+    border: '2px solid #888',
     color: '#fff',
   } as React.CSSProperties,
 };

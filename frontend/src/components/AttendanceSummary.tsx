@@ -32,6 +32,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
   const [pendingMessage, setPendingMessage] = useState<Record<string, unknown> | null>(null);
   const [selectingCancel, setSelectingCancel] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [togglingActualId, setTogglingActualId] = useState<string | null>(null);
 
   useEffect(() => {
     api.getAttendance(practice.id).then(setAttendances).catch(() => {});
@@ -39,6 +40,19 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
 
   const count = (s: string) => attendances.filter(a => a.status === s).length;
   const carpoolCount = attendances.filter(a => a.status === '参加' && a.carpool === '必要').length;
+  const actualCount = attendances.filter(a => a.actual).length;
+
+  const handleToggleActual = async (a: Attendance) => {
+    setTogglingActualId(a.id);
+    try {
+      const updated = await api.updateActual(userId, a.id, !a.actual);
+      setAttendances(prev => prev.map(r => r.id === a.id ? updated : r));
+    } catch {
+      alert('更新に失敗しました');
+    } finally {
+      setTogglingActualId(null);
+    }
+  };
 
   const d = new Date(practice.date);
   const formattedDate = `${practice.date.replace(/-/g, '/')}（${WEEKDAYS[d.getDay()]}）`;
@@ -170,6 +184,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
         <span style={{ ...styles.badge, ...styles.badgeRed }}>不参加 {count('不参加')}人</span>
         <span style={{ ...styles.badge, ...styles.badgeGray }}>未回答 {count('未回答')}人</span>
         <span style={{ ...styles.badge, ...styles.badgeBlue }}>配車必要 {carpoolCount}人</span>
+        <span style={{ ...styles.badge, ...styles.badgeOrange }}>実来場 {actualCount}人</span>
         <span style={styles.toggle}>{expanded ? '▲' : '▼'}</span>
       </div>
 
@@ -177,7 +192,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
         <div style={styles.detail}>
           {attendances.length === 0 && <p style={styles.empty}>回答がまだありません</p>}
           {attendances.map(a => (
-            <div key={a.id} style={styles.row}>
+            <div key={a.id} style={{ ...styles.row, ...(a.actual ? styles.rowActual : {}) }}>
               <span style={styles.name}>{a.displayName}</span>
               <span style={styles.rowBadges}>
                 {a.status === '参加' && a.carpool && (
@@ -196,6 +211,13 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
                 }}>
                   {a.status}
                 </span>
+                <button
+                  style={{ ...styles.actualBtn, ...(a.actual ? styles.actualBtnOn : {}) }}
+                  onClick={() => handleToggleActual(a)}
+                  disabled={togglingActualId === a.id}
+                >
+                  {a.actual ? '来場✓' : '来場'}
+                </button>
               </span>
             </div>
           ))}
@@ -335,6 +357,7 @@ const styles = {
   badgeRed: { background: '#fff0f0', color: '#e53e3e' } as React.CSSProperties,
   badgeGray: { background: '#f0f0f0', color: '#888' } as React.CSSProperties,
   badgeBlue: { background: '#eaf2ff', color: '#2b6cb0' } as React.CSSProperties,
+  badgeOrange: { background: '#fff7e6', color: '#b7791f' } as React.CSSProperties,
   toggle: { marginLeft: 'auto', fontSize: 12, color: '#888' },
   detail: { marginTop: 12, borderTop: '1px solid #eee', paddingTop: 12 },
   empty: { fontSize: 13, color: '#888', textAlign: 'center' as const },
@@ -347,7 +370,24 @@ const styles = {
     fontSize: 14,
   } as React.CSSProperties,
   name: { color: '#333' },
+  rowActual: { background: '#f0faf4' } as React.CSSProperties,
   rowBadges: { display: 'flex', gap: 6, alignItems: 'center' } as React.CSSProperties,
+  actualBtn: {
+    fontSize: 11,
+    padding: '2px 8px',
+    borderRadius: 10,
+    border: '1px solid #ccc',
+    background: '#fff',
+    color: '#888',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap' as const,
+  } as React.CSSProperties,
+  actualBtnOn: {
+    border: '1px solid #38a169',
+    background: '#e6f7ed',
+    color: '#38a169',
+    fontWeight: 'bold',
+  } as React.CSSProperties,
   carpoolNeed: { background: '#eaf2ff', color: '#2b6cb0' } as React.CSSProperties,
   attendanceBadge: {
     fontSize: 12,

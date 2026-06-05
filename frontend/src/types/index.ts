@@ -23,6 +23,7 @@ export interface Attendance {
   displayName: string;
   status: AttendanceStatus;
   carpool?: CarpoolStatus;
+  actual?: boolean;
   updatedAt: string;
 }
 

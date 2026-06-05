@@ -108,6 +108,20 @@ export const api = {
     });
   },
 
+  updateActual(userId: string, attendanceId: string, actual: boolean): Promise<Attendance> {
+    if (IS_MOCK) {
+      const idx = mockAttendances.findIndex(a => a.id === attendanceId);
+      if (idx < 0) return Promise.reject(new Error('出欠レコードが見つかりません'));
+      mockAttendances[idx] = { ...mockAttendances[idx], actual: actual || undefined };
+      return Promise.resolve(mockAttendances[idx]);
+    }
+    return request(`/api/attendance/${attendanceId}/actual`, {
+      method: 'PATCH',
+      headers: { 'x-line-user-id': userId },
+      body: JSON.stringify({ actual }),
+    });
+  },
+
   announcePractice(userId: string, practiceId: string): Promise<{ message: Record<string, unknown> }> {
     if (IS_MOCK) {
       return Promise.resolve({ message: { type: 'flex', altText: '[モック]', contents: {} } });
