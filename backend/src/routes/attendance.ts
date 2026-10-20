@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { SheetsService } from '../services/sheets';
 import { AttendanceStatus, CarpoolStatus } from '../types';
-import { requireAdmin } from '../middleware/adminAuth';
+import { isAdmin, requireAdmin } from '../middleware/adminAuth';
 
 const VALID_STATUSES: AttendanceStatus[] = ['参加', '不参加', '未回答'];
 const VALID_CARPOOLS: CarpoolStatus[] = ['必要', '不要'];
@@ -12,7 +12,11 @@ export function createAttendanceRouter(sheets: SheetsService) {
   router.get('/:practiceId', async (req, res) => {
     try {
       const attendances = await sheets.getAttendance(req.params.practiceId);
-      res.json(attendances);
+      const userId = req.headers['x-line-user-id'];
+      // 一般ユーザーには来場実績を返さない
+      res.json(typeof userId === 'string' && isAdmin(userId)
+        ? attendances
+        : attendances.map(({ actual: _actual, ...attendance }) => attendance));
     } catch {
       res.status(500).json({ error: 'サーバーエラーが発生しました' });
     }
