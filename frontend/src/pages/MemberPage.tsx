@@ -21,7 +21,7 @@ export function MemberPage({ userInfo }: Props) {
       const list = await api.getPractices();
       setPractices(list);
       // 全練習の自分の出欠を取得
-      const results = await Promise.all(list.map(p => api.getAttendance(p.id)));
+      const results = await Promise.all(list.map(p => api.getAttendance(p.id, userInfo.userId)));
       const map: Record<string, Attendance> = {};
       list.forEach((p, i) => {
         const mine = results[i].find(a => a.lineUserId === userInfo.userId);
