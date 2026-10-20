@@ -3,6 +3,8 @@ import { MOCK_PRACTICES, MOCK_ATTENDANCES, MOCK_USER } from '../mocks/data';
 
 const IS_MOCK = import.meta.env.VITE_MOCK_MODE === 'true';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
+let lineIdToken: string | null = null;
+export function setLineIdToken(token: string | null): void { lineIdToken = token; }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const { headers: extraHeaders, ...rest } = init;
@@ -10,6 +12,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     ...rest,
     headers: {
       'Content-Type': 'application/json',
+      ...(lineIdToken ? { Authorization: `Bearer ${lineIdToken}` } : {}),
       ...(extraHeaders as Record<string, string>),
     },
   });
@@ -22,7 +25,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export async function fetchMe(userId: string): Promise<{ userId: string; isAdmin: boolean }> {
   if (IS_MOCK) return { userId: MOCK_USER.userId, isAdmin: MOCK_USER.isAdmin };
-  return request('/api/me', { headers: { 'x-line-user-id': userId } });
+  return request('/api/me');
 }
 
 // モック用のインメモリストア
@@ -63,7 +66,7 @@ export const api = {
     }
     return request('/api/attendance', {
       method: 'POST',
-      body: JSON.stringify({ practiceId, lineUserId, displayName, status, carpool: effectiveCarpool }),
+      body: JSON.stringify({ practiceId, displayName, status, carpool: effectiveCarpool }),
     });
   },
 
@@ -75,7 +78,7 @@ export const api = {
     }
     return request('/api/practices', {
       method: 'POST',
-      headers: { 'x-line-user-id': userId },
+      
       body: JSON.stringify(data),
     });
   },
