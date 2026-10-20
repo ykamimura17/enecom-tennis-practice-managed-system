@@ -25,7 +25,7 @@ beforeEach(() => {
 
 describe('SEC-T03..07: existing administrator API authorization', () => {
   const payload = { title: '練習', date: '2026-10-25', time: '10:00', location: '公園' };
-  const checks: Array<[string, 'post' | 'put' | 'patch', string, unknown]> = [
+  const checks: Array<[string, 'post' | 'put' | 'patch', string, object]> = [
     ['create', 'post', '/api/practices', payload],
     ['edit', 'put', '/api/practices/p1', payload],
     ['status', 'patch', '/api/practices/p1/status', { status: '中止' }],
