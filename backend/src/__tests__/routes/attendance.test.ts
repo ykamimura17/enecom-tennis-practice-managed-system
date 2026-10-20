@@ -12,6 +12,7 @@ const mockSheets = { getAttendance, upsertAttendance } as unknown as SheetsServi
 
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => { res.locals.lineUserId = req.headers['x-line-user-id'] || 'Uuser0001'; next(); });
 app.use('/api/attendance', createAttendanceRouter(mockSheets));
 
 const sampleAttendance: Attendance = {
