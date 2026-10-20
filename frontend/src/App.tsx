@@ -98,20 +98,18 @@ export default function App() {
         </div>
       )}
 
-      {/* タブ（管理者のみ表示） */}
-      {userInfo.isAdmin && (
-        <div style={styles.tabBar}>
+      {/* 全ユーザーに出欠一覧タブを表示 */}
+      <div style={styles.tabBar}>
           {(['member', 'admin'] as Tab[]).map(t => (
             <button
               key={t}
               style={{ ...styles.tabBtn, ...(tab === t ? styles.tabBtnActive : {}) }}
               onClick={() => setTab(t)}
             >
-              {t === 'member' ? '参加登録' : '管理'}
+              {t === 'member' ? '参加登録' : '出欠一覧'}
             </button>
           ))}
-        </div>
-      )}
+      </div>
 
       {/* コンテンツ */}
       <main style={styles.main}>
