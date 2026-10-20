@@ -5,6 +5,7 @@ import { Practice, PracticeStatus, Attendance } from '../types';
 interface Props {
   practice: Practice;
   userId: string;
+  isAdmin: boolean;
   onFetchAnnounce: (practiceId: string) => Promise<Record<string, unknown>>;
   onShare: (message: Record<string, unknown>) => Promise<void>;
   onStatusChange: (practiceId: string, status: PracticeStatus) => void;
@@ -24,7 +25,7 @@ const STATUS_BADGE: Record<PracticeStatus, { label: string; style: React.CSSProp
   '中止':    { label: '中止',    style: { background: '#f0f0f0', color: '#666' } },
 };
 
-export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, onStatusChange, onEdit }: Props) {
+export function AttendanceSummary({ practice, userId, isAdmin, onFetchAnnounce, onShare, onStatusChange, onEdit }: Props) {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [announcing, setAnnouncing] = useState(false);
@@ -35,8 +36,8 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
   const [togglingActualId, setTogglingActualId] = useState<string | null>(null);
 
   useEffect(() => {
-    api.getAttendance(practice.id).then(setAttendances).catch(() => {});
-  }, [practice.id]);
+    api.getAttendance(practice.id, userId).then(setAttendances).catch(() => {});
+  }, [practice.id, userId]);
 
   const count = (s: string) => attendances.filter(a => a.status === s).length;
 
@@ -106,7 +107,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
           )}
         </div>
 
-        <div style={styles.actions}>
+        {isAdmin && <div style={styles.actions}>
           {isCancelled ? (
             <button
               style={styles.restoreBtn}
@@ -136,12 +137,12 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
               </button>
             </>
           )}
-        </div>
+        </div>}
       </div>
       <div style={styles.sub}>{formattedDate} {practice.time}〜{practice.endTime ?? ''} / {practice.location}</div>
 
       {/* LINE送信確認（インライン展開） */}
-      {confirmingAnnounce && (
+      {isAdmin && confirmingAnnounce && (
         <div style={styles.cancelPicker}>
           <span style={styles.cancelPickerLabel}>LINEグループに練習案内を送信しますか？</span>
           <div style={styles.cancelPickerBtns}>
@@ -156,7 +157,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
       )}
 
       {/* 中止理由選択（インライン展開） */}
-      {selectingCancel && (
+      {isAdmin && selectingCancel && (
         <div style={styles.cancelPicker}>
           <span style={styles.cancelPickerLabel}>中止の理由</span>
           <div style={styles.cancelPickerBtns}>
@@ -187,7 +188,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
         <div style={styles.detail}>
           {attendances.length === 0 && <p style={styles.empty}>回答がまだありません</p>}
           {attendances.map(a => (
-            <div key={a.id} style={{ ...styles.row, ...(a.actual ? styles.rowActual : {}) }}>
+            <div key={a.id} style={{ ...styles.row, ...(isAdmin && a.actual ? styles.rowActual : {}) }}>
               <span style={styles.name}>{a.displayName}</span>
               <span style={styles.rowBadges}>
                 {a.status === '参加' && a.carpool && (
@@ -206,13 +207,13 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
                 }}>
                   {a.status}
                 </span>
-                <button
+                {isAdmin && <button
                   style={{ ...styles.actualBtn, ...(a.actual ? styles.actualBtnOn : {}) }}
                   onClick={() => handleToggleActual(a)}
                   disabled={togglingActualId === a.id}
                 >
                   {a.actual ? '来場✓' : '来場'}
-                </button>
+                </button>}
               </span>
             </div>
           ))}
