@@ -39,8 +39,6 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
   }, [practice.id]);
 
   const count = (s: string) => attendances.filter(a => a.status === s).length;
-  const carpoolCount = attendances.filter(a => a.status === '参加' && a.carpool === '必要').length;
-  const actualCount = attendances.filter(a => a.actual).length;
 
   const handleToggleActual = async (a: Attendance) => {
     setTogglingActualId(a.id);
@@ -181,10 +179,7 @@ export function AttendanceSummary({ practice, userId, onFetchAnnounce, onShare, 
       {/* 出欠集計 */}
       <div style={styles.summary} onClick={() => setExpanded(v => !v)}>
         <span style={styles.badge}>参加 {count('参加')}人</span>
-        <span style={{ ...styles.badge, ...styles.badgeRed }}>不参加 {count('不参加')}人</span>
-        <span style={{ ...styles.badge, ...styles.badgeGray }}>未回答 {count('未回答')}人</span>
-        <span style={{ ...styles.badge, ...styles.badgeBlue }}>配車必要 {carpoolCount}人</span>
-        <span style={{ ...styles.badge, ...styles.badgeOrange }}>実来場 {actualCount}人</span>
+        <span style={{ ...styles.badge, ...styles.badgeRed }}>不参加・未回答 {count('不参加') + count('未回答')}人</span>
         <span style={styles.toggle}>{expanded ? '▲' : '▼'}</span>
       </div>
 
@@ -355,9 +350,6 @@ const styles = {
     color: '#06C755',
   } as React.CSSProperties,
   badgeRed: { background: '#fff0f0', color: '#e53e3e' } as React.CSSProperties,
-  badgeGray: { background: '#f0f0f0', color: '#888' } as React.CSSProperties,
-  badgeBlue: { background: '#eaf2ff', color: '#2b6cb0' } as React.CSSProperties,
-  badgeOrange: { background: '#fff7e6', color: '#b7791f' } as React.CSSProperties,
   toggle: { marginLeft: 'auto', fontSize: 12, color: '#888' },
   detail: { marginTop: 12, borderTop: '1px solid #eee', paddingTop: 12 },
   empty: { fontSize: 13, color: '#888', textAlign: 'center' as const },
