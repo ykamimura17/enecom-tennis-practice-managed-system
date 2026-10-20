@@ -1,0 +1,345 @@
+openapi: 3.0.3
+info:
+  title: LINE 練習参加管理 API
+  version: 1.0.0
+  description: |
+    現在のExpress実装に基づくAPI契約。
+    x-line-user-idは自己申告ヘッダーであり、安全な認証ではない。
+    将来LINE IDトークンをサーバー検証するまで認証の脆弱性が残る。
+servers:
+  - url: /
+tags:
+  - name: System
+  - name: Practices
+  - name: Attendance
+paths:
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: ヘルスチェック
+      security: []
+      responses:
+        '200':
+          description: 稼働中
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+  /api/me:
+    get:
+      tags: [System]
+      operationId: getMe
+      summary: 申告されたUserIDから管理者フラグを返す（現行方式・要改修）
+      security:
+        - userIdHeader: []
+      responses:
+        '200':
+          description: ユーザー情報
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [userId, isAdmin]
+                properties:
+                  userId: { type: string }
+                  isAdmin: { type: boolean }
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/practices:
+    get:
+      tags: [Practices]
+      operationId: listPractices
+      summary: 練習一覧
+      security: []
+      responses:
+        '200':
+          description: 練習一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Practice'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [Practices]
+      operationId: createPractice
+      summary: 練習作成（管理者専用）
+      security:
+        - userIdHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PracticeInput'
+      responses:
+        '201':
+          description: 作成された練習
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Practice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/practices/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Practices]
+      operationId: updatePractice
+      summary: 練習編集（管理者専用）
+      security:
+        - userIdHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PracticeInput'
+      responses:
+        '200':
+          description: 更新された練習
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Practice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/practices/{id}/status:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Practices]
+      operationId: setPracticeStatus
+      summary: 開催状態変更（管理者専用）
+      security:
+        - userIdHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/PracticeStatus'
+      responses:
+        '200':
+          description: 更新された練習
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Practice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/practices/{id}/announce:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    post:
+      tags: [Practices]
+      operationId: announcePractice
+      summary: LINE共有用Flex Messageを生成（管理者専用）
+      security:
+        - userIdHeader: []
+      responses:
+        '200':
+          description: LINE共有用メッセージ（送信はクライアントが実施）
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message:
+                    type: object
+                    additionalProperties: true
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/attendance/{practiceId}:
+    parameters:
+      - name: practiceId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Attendance]
+      operationId: listAttendance
+      summary: 練習の出欠一覧（現行APIは未認証で取得可能）
+      security: []
+      responses:
+        '200':
+          description: 出欠一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attendance'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/attendance:
+    post:
+      tags: [Attendance]
+      operationId: upsertAttendance
+      summary: 出欠登録・変更（現行APIは本文のUserIDを信頼）
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceInput'
+      responses:
+        '200':
+          description: 登録された出欠
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/attendance/{id}/actual:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      tags: [Attendance]
+      operationId: setActualAttendance
+      summary: 来場実績の変更（管理者専用）
+      security:
+        - userIdHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [actual]
+              properties:
+                actual: { type: boolean }
+      responses:
+        '200':
+          description: 更新された出欠
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attendance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  securitySchemes:
+    userIdHeader:
+      type: apiKey
+      in: header
+      name: x-line-user-id
+      description: 現行の管理者判定用UserID。自己申告値のため認証として不十分。要改修。
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+  responses:
+    BadRequest:
+      description: 入力不備
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: 管理者権限なし
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: 対象が見つからない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+    PracticeStatus:
+      type: string
+      enum: [開催, 雨天中止, 中止]
+    PracticeInput:
+      type: object
+      required: [title, date, time, location]
+      properties:
+        title: { type: string }
+        date: { type: string, pattern: '^\\d{4}-\\d{2}-\\d{2}$' }
+        time: { type: string, pattern: '^\\d{2}:\\d{2}$' }
+        endTime: { type: string }
+        location: { type: string }
+        description: { type: string }
+    Practice:
+      allOf:
+        - $ref: '#/components/schemas/PracticeInput'
+        - type: object
+          required: [id, createdAt, status]
+          properties:
+            id: { type: string }
+            createdAt: { type: string }
+            status:
+              $ref: '#/components/schemas/PracticeStatus'
+    AttendanceInput:
+      type: object
+      required: [practiceId, lineUserId, displayName, status]
+      properties:
+        practiceId: { type: string }
+        lineUserId: { type: string }
+        displayName: { type: string }
+        status: { type: string, enum: [参加, 不参加, 未回答] }
+        carpool: { type: string, enum: [必要, 不要] }
+    Attendance:
+      allOf:
+        - $ref: '#/components/schemas/AttendanceInput'
+        - type: object
+          required: [id, updatedAt]
+          properties:
+            id: { type: string }
+            updatedAt: { type: string }
+            actual: { type: boolean }
