@@ -32,7 +32,7 @@ jobs:
         working-directory: ${{ matrix.directory }}
         run: |
           npm audit --audit-level=high --json > ../audit-${{ matrix.directory }}.json || result=$?
-          node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("audit-${{ matrix.directory }}.json")); console.log(JSON.stringify(x.metadata?.vulnerabilities || {}, null, 2));'
+          node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("../audit-${{ matrix.directory }}.json")); console.log(JSON.stringify(x.metadata?.vulnerabilities || {}, null, 2));'
           if [ "${result:-0}" -ne 0 ]; then
             echo "::warning::Dependency audit reported vulnerabilities for ${{ matrix.directory }}. Review audit artifact before enabling blocking."
           fi
@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install OSS Semgrep
-        run: python -m pip install --user 'semgrep==1.140.0'
+        run: python -m pip install --user 'semgrep==1.140.0' 'pydantic<2.12'
       - name: Run project security rules
         run: ~/.local/bin/semgrep scan --config .github/security/semgrep.yml --error backend/src frontend/src
 
