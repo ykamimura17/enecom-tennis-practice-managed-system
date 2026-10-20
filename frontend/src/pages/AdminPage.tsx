@@ -67,10 +67,10 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.heading}>管理画面</h1>
-        <button style={styles.addBtn} onClick={() => setShowForm(true)}>
+        <h1 style={styles.heading}>出欠一覧</h1>
+        {userInfo.isAdmin && <button style={styles.addBtn} onClick={() => setShowForm(true)}> 
           ＋ 練習を追加
-        </button>
+        </button>}
       </div>
 
       {error && <div style={styles.error}>{error}</div>}
@@ -84,6 +84,7 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
           key={p.id}
           practice={p}
           userId={userInfo.userId}
+          isAdmin={userInfo.isAdmin}
           onFetchAnnounce={handleFetchAnnounce}
           onShare={handleShare}
           onStatusChange={handleStatusChange}
@@ -91,14 +92,14 @@ export function AdminPage({ userInfo, onPracticeCreated }: Props) {
         />
       ))}
 
-      {showForm && (
+      {userInfo.isAdmin && showForm && (
         <CreatePracticeForm
           onSubmit={handleCreate}
           onClose={() => setShowForm(false)}
         />
       )}
 
-      {editingPractice && (
+      {userInfo.isAdmin && editingPractice && (
         <CreatePracticeForm
           initialValues={{
             title: editingPractice.title,
