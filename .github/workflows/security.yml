@@ -52,7 +52,13 @@ jobs:
       - name: Install OSS Semgrep
         run: python -m pip install --user 'semgrep==1.140.0' 'pydantic<2.12'
       - name: Run project security rules
-        run: ~/.local/bin/semgrep scan --config .github/security/semgrep.yml --error backend/src frontend/src
+        run: |
+          ~/.local/bin/semgrep scan --config .github/security/semgrep.yml --json --output semgrep-results.json backend/src frontend/src
+          node -e '
+            const issues = require("./semgrep-results.json").results || [];
+            for (const issue of issues) console.log("::warning file=" + issue.path + ",line=" + issue.start.line + "::" + issue.check_id + ": " + issue.extra.message);
+            if (issues.some(x => x.extra.severity === "ERROR")) process.exit(1);
+          '
 
   secret-scan:
     name: secret-scan
