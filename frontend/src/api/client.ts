@@ -35,9 +35,9 @@ export const api = {
     return request('/api/practices');
   },
 
-  getAttendance(practiceId: string): Promise<Attendance[]> {
-    if (IS_MOCK) return Promise.resolve(mockAttendances.filter(a => a.practiceId === practiceId));
-    return request(`/api/attendance/${practiceId}`);
+  getAttendance(practiceId: string, userId: string): Promise<Attendance[]> {
+    if (IS_MOCK) return Promise.resolve(mockAttendances.filter(a => a.practiceId === practiceId).map(a => MOCK_USER.isAdmin ? a : { ...a, actual: undefined }));
+    return request(`/api/attendance/${practiceId}`, { headers: { 'x-line-user-id': userId } });
   },
 
   upsertAttendance(
