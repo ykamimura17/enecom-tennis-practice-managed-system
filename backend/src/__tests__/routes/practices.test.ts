@@ -41,7 +41,7 @@ const newPracticeBody = {
 beforeEach(() => {
   vi.resetAllMocks();
   process.env.ADMIN_LINE_USER_IDS = ADMIN_ID;
-  process.env.VITE_LIFF_ID = 'liff-test-id';
+  process.env.LIFF_ID = 'liff-test-id';
 });
 
 // ─────────────────────────────────────────────────────────────
