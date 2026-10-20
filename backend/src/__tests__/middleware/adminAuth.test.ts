@@ -14,6 +14,7 @@ beforeEach(() => {
 // requireAdmin の動作確認用アプリ（モジュールロード後に env が変わっても
 // getAdminIds() がリクエスト時に再評価されることを確認する）
 const app = express();
+app.use((req, res, next) => { res.locals.lineUserId = req.headers['x-line-user-id']; next(); });
 app.get('/test', requireAdmin, (_req, res) => res.json({ ok: true }));
 
 describe('isAdmin', () => {
