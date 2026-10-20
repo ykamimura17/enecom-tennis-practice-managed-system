@@ -36,7 +36,7 @@ jobs:
           if [ "${result:-0}" -ne 0 ]; then
             echo "::warning::Dependency audit reported vulnerabilities for ${{ matrix.directory }}. Review audit artifact before enabling blocking."
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: audit-${{ matrix.directory }}
