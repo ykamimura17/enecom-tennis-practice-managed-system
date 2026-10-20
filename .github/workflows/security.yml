@@ -1,0 +1,71 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: dependency-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: [frontend, backend]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit dependencies (report existing vulnerabilities)
+        working-directory: ${{ matrix.directory }}
+        run: |
+          npm audit --audit-level=high --json > ../audit-${{ matrix.directory }}.json || result=$?
+          node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("../audit-${{ matrix.directory }}.json")); console.log(JSON.stringify(x.metadata?.vulnerabilities || {}, null, 2));'
+          if [ "${result:-0}" -ne 0 ]; then
+            echo "::warning::Dependency audit reported vulnerabilities for ${{ matrix.directory }}. Review audit artifact before enabling blocking."
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-${{ matrix.directory }}
+          path: audit-${{ matrix.directory }}.json
+          retention-days: 7
+
+  semgrep:
+    name: semgrep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install OSS Semgrep
+        run: python -m pip install --user 'semgrep==1.140.0' 'pydantic<2.12'
+      - name: Run project security rules
+        run: |
+          ~/.local/bin/semgrep scan --config .github/security/semgrep.yml --json --output semgrep-results.json backend/src frontend/src
+          node -e '
+            const issues = require("./semgrep-results.json").results || [];
+            for (const issue of issues) console.log("::warning file=" + issue.path + ",line=" + issue.start.line + "::" + issue.check_id + ": " + issue.extra.message);
+            if (issues.some(x => x.extra.severity === "ERROR")) process.exit(1);
+          '
+
+  secret-scan:
+    name: secret-scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan tracked files for exposed secrets
+        run: |
+          docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.24.3 dir /repo --redact --exit-code 1

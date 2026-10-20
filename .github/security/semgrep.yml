@@ -1,0 +1,17 @@
+rules:
+  - id: no-unchecked-admin-header
+    languages: [typescript]
+    severity: WARNING
+    message: "Do not introduce new authorization logic based on x-line-user-id; verify LINE ID tokens server-side (SEC-01)."
+    patterns:
+      - pattern: $REQ.headers['x-line-user-id']
+    paths:
+      include:
+        - backend/src/**/*.ts
+  - id: no-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "Avoid dynamic code evaluation."
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
