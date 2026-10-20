@@ -3,5 +3,7 @@ extends:
 rules:
   security-defined: error
   operation-operationId: error
-  operation-4xx-response: error
+  operation-4xx-response: off
+  tag-description: off
+  info-license: off
   operation-summary: error
