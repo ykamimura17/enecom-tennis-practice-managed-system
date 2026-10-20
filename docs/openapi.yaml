@@ -4,8 +4,7 @@ info:
   version: 1.0.0
   description: |
     現在のExpress実装に基づくAPI契約。
-    x-line-user-idは自己申告ヘッダーであり、安全な認証ではない。
-    将来LINE IDトークンをサーバー検証するまで認証の脆弱性が残る。
+    Authorization BearerでLINE IDトークンを送信し、バックエンドでLINEの検証APIに問い合わせる。
 servers:
   - url: /
 tags:
@@ -18,7 +17,8 @@ paths:
       tags: [System]
       operationId: getHealth
       summary: ヘルスチェック
-      security: []
+      security:
+        - lineIdToken: []
       responses:
         '200':
           description: 稼働中
@@ -35,9 +35,9 @@ paths:
     get:
       tags: [System]
       operationId: getMe
-      summary: 申告されたUserIDから管理者フラグを返す（現行方式・要改修）
+      summary: 認証済みLINEユーザーの管理者フラグを返す
       security:
-        - userIdHeader: []
+        - lineIdToken: []
       responses:
         '200':
           description: ユーザー情報
@@ -56,7 +56,8 @@ paths:
       tags: [Practices]
       operationId: listPractices
       summary: 練習一覧
-      security: []
+      security:
+        - lineIdToken: []
       responses:
         '200':
           description: 練習一覧
@@ -73,7 +74,7 @@ paths:
       operationId: createPractice
       summary: 練習作成（管理者専用）
       security:
-        - userIdHeader: []
+        - lineIdToken: []
       requestBody:
         required: true
         content:
@@ -101,7 +102,7 @@ paths:
       operationId: updatePractice
       summary: 練習編集（管理者専用）
       security:
-        - userIdHeader: []
+        - lineIdToken: []
       requestBody:
         required: true
         content:
@@ -131,7 +132,7 @@ paths:
       operationId: setPracticeStatus
       summary: 開催状態変更（管理者専用）
       security:
-        - userIdHeader: []
+        - lineIdToken: []
       requestBody:
         required: true
         content:
@@ -163,7 +164,7 @@ paths:
       operationId: announcePractice
       summary: LINE共有用Flex Messageを生成（管理者専用）
       security:
-        - userIdHeader: []
+        - lineIdToken: []
       responses:
         '200':
           description: LINE共有用メッセージ（送信はクライアントが実施）
@@ -191,8 +192,9 @@ paths:
     get:
       tags: [Attendance]
       operationId: listAttendance
-      summary: 練習の出欠一覧（現行APIは未認証で取得可能）
-      security: []
+      summary: 練習の出欠一覧
+      security:
+        - lineIdToken: []
       responses:
         '200':
           description: 出欠一覧
@@ -208,8 +210,9 @@ paths:
     post:
       tags: [Attendance]
       operationId: upsertAttendance
-      summary: 出欠登録・変更（現行APIは本文のUserIDを信頼）
-      security: []
+      summary: 出欠登録・変更（トークンの本人IDを使用）
+      security:
+        - lineIdToken: []
       requestBody:
         required: true
         content:
@@ -235,7 +238,7 @@ paths:
       operationId: setActualAttendance
       summary: 来場実績の変更（管理者専用）
       security:
-        - userIdHeader: []
+        - lineIdToken: []
       requestBody:
         required: true
         content:
@@ -260,11 +263,11 @@ paths:
           $ref: '#/components/responses/ServerError'
 components:
   securitySchemes:
-    userIdHeader:
-      type: apiKey
-      in: header
-      name: x-line-user-id
-      description: 現行の管理者判定用UserID。自己申告値のため認証として不十分。要改修。
+    lineIdToken:
+      type: http
+      scheme: bearer
+      bearerFormat: LINE ID token
+      description: LINE IDトークン（署名等はLINE検証APIが検証）
   parameters:
     Id:
       name: id
@@ -327,7 +330,7 @@ components:
               $ref: '#/components/schemas/PracticeStatus'
     AttendanceInput:
       type: object
-      required: [practiceId, lineUserId, displayName, status]
+      required: [practiceId, displayName, status]
       properties:
         practiceId: { type: string }
         lineUserId: { type: string }
