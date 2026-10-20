@@ -100,10 +100,12 @@ describe('POST /api/attendance', () => {
     expect(upsertAttendance).not.toHaveBeenCalled();
   });
 
-  it('lineUserId が欠けている場合は 400 を返す', async () => {
+  it('lineUserId が本文に無い場合も検証済み本人IDで登録する', async () => {
     const { lineUserId: _, ...body } = validPostBody;
+    upsertAttendance.mockResolvedValue(sampleAttendance);
     const res = await request(app).post('/api/attendance').send(body);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    expect(upsertAttendance).toHaveBeenCalledWith(expect.objectContaining({ lineUserId: 'Uuser0001' }));
   });
 
   it('displayName が欠けている場合は 400 を返す', async () => {
