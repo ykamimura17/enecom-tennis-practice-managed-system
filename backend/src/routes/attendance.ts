@@ -9,6 +9,14 @@ const VALID_CARPOOLS: CarpoolStatus[] = ['必要', '不要'];
 export function createAttendanceRouter(sheets: SheetsService) {
   const router = Router();
 
+  router.get('/:practiceId/roster', async (req, res) => {
+    try {
+      const practices=await sheets.getPractices();
+      if (!practices.some(p=>p.id===req.params.practiceId)) {res.status(404).json({error:'練習が見つかりません'});return;}
+      res.json(await sheets.getPracticeRoster(req.params.practiceId));
+    } catch {res.status(500).json({error:'サーバーエラーが発生しました'});}
+  });
+
   router.get('/:practiceId', async (req, res) => {
     try {
       const attendances = await sheets.getAttendance(req.params.practiceId);
