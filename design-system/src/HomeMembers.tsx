@@ -30,7 +30,7 @@ const iconPaths={
 type IconName=keyof typeof iconPaths;
 function Icon({name,size=21}:{name:IconName;size?:number}){return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{iconPaths[name]}</svg>}
 function Nav({active,onChange}:{active:Page;onChange:(page:Page)=>void}){
- const links=([{page:'home',label:'ホーム',icon:'home'},{page:'practice',label:'練習',icon:'calendar'},{page:'admin',label:'管理',icon:'check'},{page:'members',label:'メンバー',icon:'users'}] as const);
+ const links=([{page:'home',label:'ホーム',icon:'home'},{page:'practice',label:'練習',icon:'calendar'},{page:'members',label:'メンバー',icon:'users'},{page:'admin',label:'管理',icon:'check'}] as const);
  return <footer className="tm-bottom-nav" aria-label="画面切り替え">{links.map(l=><button key={l.page} type="button" className={active===l.page?'active':''} onClick={()=>onChange(l.page)}><Icon name={l.icon} size={23}/><span>{l.label}</span></button>)}</footer>;
 }
 export function HomeMembers({initialPage='home',initialFilter='全員',onNavigate}:{initialPage?:'home'|'members';initialFilter?:Filter;onNavigate?:(page:Page)=>void}){
