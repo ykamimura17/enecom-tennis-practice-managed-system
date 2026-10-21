@@ -29,7 +29,7 @@ export function createAttendanceRouter(sheets: SheetsService) {
       res.status(400).json({ error: '全フィールドが必須です' });
       return;
     }
-    if (!VALID_STATUSES.includes(status)) {
+    if (!VALID_STATUSES.includes(status as AttendanceStatus)) {
       res.status(400).json({ error: 'status は 参加/不参加/未回答 のいずれかです' });
       return;
     }
@@ -54,7 +54,7 @@ export function createAttendanceRouter(sheets: SheetsService) {
         return;
       }
       const record = await sheets.upsertAttendance({
-        practiceId, lineUserId, displayName, status,
+        practiceId, lineUserId, displayName, status: status as AttendanceStatus,
         carpool: carpool || undefined,
       });
       res.json(record);
