@@ -36,7 +36,7 @@ export default function App(){
   const loadPractices=useCallback(async()=>{
     try{setPractices(await api.getPractices());}catch{/* list errors are shown on the target page */}
   },[]);
-  useEffect(()=>{if(userInfo)void loadPractices();},[userInfo,loadPractices]);
+  useEffect(()=>{if(userInfo){void loadPractices();void api.registerMember(userInfo.displayName).catch(()=>{/* member page retries on next launch */});}},[userInfo,loadPractices]);
   useEffect(()=>{
     if(!next){setNextAttendance([]);return;}
     let active=true;
