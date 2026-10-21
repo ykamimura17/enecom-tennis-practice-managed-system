@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MobileRegistration } from './MobileRegistration';
+import { PracticeList } from './PracticeList';
 
 const meta = {
   title: 'スマホデザイン / A案・ミニマルカード型 / 参加登録',
   component: MobileRegistration,
+  render: args => <PracticeList initialPage="register" initialStatus={args.initialStatus} initialCarpool={args.initialCarpool} initialComment={args.initialComment}/>,
   parameters: { layout: 'fullscreen' },
   args: { initialStatus: '未回答', initialCarpool: '不要', initialComment: '', saved: false },
   argTypes: {
