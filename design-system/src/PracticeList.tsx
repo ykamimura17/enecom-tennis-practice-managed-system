@@ -6,7 +6,7 @@ import './mobile.css';
 import './PracticeList.css';
 
 type Filter = 'すべて' | '受付中' | '参加予定';
-type Practice = { id: number; date: string; day: string; title: string; time: string; place: string; status: '受付中' | '終了'; response: '参加' | '不参加' | '未回答'; detail: string; start: string; carpool?: '必要' | '不要'; comment?: string };
+type Practice = { id: number; date: string; day: string; title: string; time: string; place: string; status: '受付中' | '終了' | '雨天中止' | '中止'; response: '参加' | '不参加' | '未回答'; detail: string; start: string; carpool?: '必要' | '不要'; comment?: string };
 const initialPractices: Practice[] = [
   { id: 1, start: '2026-10-26T10:00', date: '10/26', day: '土', title: '午前練習', time: '10:00 – 12:00', place: '市営テニスコート A/B', status: '受付中', response: '参加', detail: '基礎練習とゲーム練習を行います。' },
   { id: 2, start: '2026-11-02T13:00', date: '11/02', day: '土', title: '午後練習', time: '13:00 – 16:00', place: '市営テニスコート C/D', status: '受付中', response: '未回答', detail: 'ラリー練習とダブルスゲームを予定しています。' },
@@ -36,6 +36,18 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
  const [created,setCreated]=useState(false);
  const [announceTarget,setAnnounceTarget]=useState<number|null>(null);
  const [announceDone,setAnnounceDone]=useState(false);
+ const [adminView,setAdminView]=useState<'hub'|'create'|'edit'|'cancel'|'attendance'|'announce'>('hub');
+ const [adminTarget,setAdminTarget]=useState<number|null>(null);
+ const [cancelReason,setCancelReason]=useState<'雨天中止'|'中止'>('雨天中止');
+ const [actuals,setActuals]=useState<Record<number,Record<string,boolean>>>({});
+ const [adminNotice,setAdminNotice]=useState('');
+ const participants=[{id:'a',name:'山田 花子',status:'参加',carpool:'不要'},{id:'b',name:'佐藤 太郎',status:'参加',carpool:'必要'},{id:'c',name:'田中 美咲',status:'参加',carpool:'不要'},{id:'d',name:'鈴木 健',status:'不参加',carpool:'不要'},{id:'e',name:'高橋 葵',status:'未回答',carpool:'不要'}] as const;
+ const activePractice=items.find(p=>p.id===adminTarget);
+ const openAdmin=(view:typeof adminView)=>{setAdminView(view);setAdminTarget(null);setAdminError('');setAdminNotice('');setAnnounceTarget(null);setAnnounceDone(false);if(view==='create'){setTitle('');setDate('');setStartTime('');setEndTime('');setPlace('');setDetail('')}};
+ const selectAdminPractice=(p:Practice)=>{setAdminTarget(p.id);setAdminError('');setAdminNotice('');if(adminView==='edit'){setTitle(p.title);setDate(p.start.slice(0,10));setStartTime(p.start.slice(11,16));setEndTime(p.time.split('–')[1]?.trim()??'');setPlace(p.place);setDetail(p.detail)}};
+ const editPractice=()=>{if(!activePractice)return;if(!title.trim()||!date||!startTime||!endTime||!place.trim()){setAdminError('必須項目を入力してください。');return}if(endTime<=startTime){setAdminError('終了時刻は開始時刻より後にしてください。');return}const d=new Date(date+'T00:00:00');setItems(prev=>prev.map(p=>p.id===activePractice.id?{...p,title:title.trim(),start:date+'T'+startTime,date:String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0'),day:['日','月','火','水','木','金','土'][d.getDay()],time:startTime+' – '+endTime,place:place.trim(),detail:detail.trim()}:p));setAdminNotice('練習内容を更新しました。');setAdminTarget(null)};
+ const setPracticeStatus=(status:Practice['status'])=>{if(!activePractice)return;setItems(prev=>prev.map(p=>p.id===activePractice.id?{...p,status}:p));setAdminNotice(status==='受付中'?'中止を解除しました。':'練習を中止しました。');setAdminTarget(null)};
+ const goAdminHub=()=>{setAdminView('hub');setAdminTarget(null);setAdminError('');setAnnounceTarget(null)};
  const sorted=[...items].sort((a,b)=>b.start.localeCompare(a.start)||b.id-a.id);
  const shown=sorted.filter(p=>filter==='すべて'||(filter==='受付中'?p.status==='受付中':p.response==='参加'));
  const openRegistration=(p:Practice)=>{setSelected(p);setAnswer(p.response);setCarpool(p.carpool);setComment(p.comment??'');setRegistering(true)};
@@ -53,9 +65,9 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
    const p:Practice={id:Math.max(0,...items.map(p=>p.id))+1,start:date+'T'+startTime,date:(dateValue.getMonth()+1).toString().padStart(2,'0')+'/'+dateValue.getDate().toString().padStart(2,'0'),day:['日','月','火','水','木','金','土'][dateValue.getDay()],title:title.trim(),time:startTime+' – '+endTime,place:place.trim(),status:'受付中',response:'未回答',detail:detail.trim()};
    setItems(prev=>[...prev,p]);setAdminError('');setCreated(true);setTitle('');setDate('');setStartTime('');setEndTime('');setPlace('');setDetail('');
  };
- if(!registering&&(tab==='home'||tab==='members'))return <HomeMembers key={tab} initialPage={tab} initialFilter={initialMemberFilter} onNavigate={page=>{setTab(page);setSelected(null);setRegistering(false)}}/>;
+ if(!registering&&(tab==='home'||tab==='members'))return <HomeMembers key={tab} initialPage={tab} initialFilter={initialMemberFilter} isAdmin={isAdmin} onNavigate={page=>{setTab(page);setSelected(null);setRegistering(false);if(page==='admin')goAdminHub()}}/>;
  return <div className="tm-stage"><div className="tm-phone pl-phone" lang="ja">
-  <header className="tm-header"><button className="tm-back" aria-label="戻る" onClick={()=>{if(registering){backToList()}else if(selected){setSelected(null)}else{setTab('practice')}}}><Glyph name="back"/></button><h1>{registering?'参加登録':tab==='admin'?'管理':tab==='home'?'ホーム':tab==='members'?'メンバー':selected?'練習詳細':'練習予定'}</h1><span className="tm-header-space"/></header>
+  <header className="tm-header"><button className="tm-back" aria-label="戻る" onClick={()=>{if(registering){backToList()}else if(tab==='admin'&&adminView!=='hub'){goAdminHub()}else if(selected){setSelected(null)}else{setTab('practice')}}}><Glyph name="back"/></button><h1>{registering?'参加登録':tab==='admin'?(adminView==='hub'?'管理':({create:'練習を追加',edit:'練習を編集',cancel:'中止・再開',attendance:'来場実績',announce:'LINE通知'} as const)[adminView]):tab==='home'?'ホーム':tab==='members'?'メンバー':selected?'練習詳細':'練習予定'}</h1><span className="tm-header-space"/></header>
   {registering&&selected?<main className="tm-content pl-content">
     <article className="tm-practice tm-card" style={{backgroundImage:'linear-gradient(90deg,rgba(255,255,255,.98),rgba(255,255,255,.89) 49%,rgba(255,255,255,.23)),url('+hero+')'}}>
       <div className="tm-hero-status"><span className="tm-tennis-logo">◉</span><span className="tm-accepting">{selected.status}</span></div>
@@ -73,42 +85,31 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
     <button className="pl-back-list" onClick={backToList}>← 練習一覧に戻る</button>
     <p className="tm-demo-note">Storybookプレビューです。実際の出欠データは更新しません。</p>
   </main>:tab==='admin'&&isAdmin?<main className="tm-content pl-content">
-    <div className="pl-intro"><span className="pl-eyebrow">MANAGEMENT</span><h2>練習を追加</h2><p>新しい練習を作成すると練習一覧に表示されます。</p></div>
-    <section className="tm-card pl-admin-form">
-      <label>練習タイトル <span>必須</span><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="例：午前練習"/></label>
-      <label>開催日 <span>必須</span><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-      <div className="pl-admin-times"><label>開始時刻 <span>必須</span><input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/></label><label>終了時刻 <span>必須</span><input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></label></div>
-      <label>場所 <span>必須</span><input value={place} onChange={e=>setPlace(e.target.value)} placeholder="例：市営テニスコート A/B"/></label>
-      <label>練習内容 <span>任意</span><textarea value={detail} onChange={e=>setDetail(e.target.value)} placeholder="練習内容や連絡事項"/></label>
-      {adminError&&<p className="pl-form-error" role="alert">{adminError}</p>}
-      {created&&<p className="pl-form-success" role="status">練習を追加しました。練習一覧で確認できます。</p>}
-      <button className="pl-primary" onClick={createPractice}>新しい練習を追加 <Glyph name="chevron"/></button>
-      <button className="pl-back-list" onClick={()=>{setTab('practice');setSelected(null)}}>練習一覧を見る →</button>
-    </section>
-    <section className="tm-card pl-admin-announcements">
-      <div className="pl-announcement-heading">
-        <span className="pl-announcement-kicker">LINE NOTIFICATION</span>
-        <h2>LINEで練習を通知</h2>
-        <p>通知する練習を選択して、LINEグループへ案内します。</p>
+    {adminView==='hub'?<>
+      <div className="pl-intro"><span className="pl-eyebrow">MANAGEMENT</span><h2>管理メニュー</h2><p>操作したい機能を選択してください。</p></div>
+      <div className="pl-admin-hub">
+        {([{view:'create',icon:'calendar',title:'練習を追加',desc:'新しい練習予定を登録'},{view:'edit',icon:'settings',title:'練習を編集',desc:'日時・場所・内容を変更'},{view:'cancel',icon:'check',title:'中止・中止解除',desc:'中止理由の設定と再開'},{view:'attendance',icon:'users',title:'来場実績を記録',desc:'参加者の来場状況をチェック'},{view:'announce',icon:'chevron',title:'LINEで通知',desc:'練習案内をLINEに送信'}] as const).map(item=><button type="button" className="tm-card pl-admin-menu-card" key={item.view} onClick={()=>openAdmin(item.view)}><span className="pl-admin-menu-icon"><Glyph name={item.icon}/></span><span className="pl-admin-menu-copy"><strong>{item.title}</strong><small>{item.desc}</small></span><Glyph name="chevron"/></button>)}
       </div>
-      <div className="pl-announcement-list">
-        {sorted.filter(p=>p.status==='受付中').map(p=><div className="pl-announcement-item" key={p.id}>
-          <div className="pl-announcement-date"><strong>{p.date}</strong><span>{p.day}</span></div>
-          <div className="pl-announcement-info"><strong>{p.title}</strong><span><Glyph name="clock"/>{p.time}</span><span><Glyph name="pin"/>{p.place}</span></div>
-          <button type="button" className="pl-line-button" onClick={()=>openAnnouncement(p.id)}>LINE送信 <Glyph name="chevron"/></button>
-        </div>)}
-      </div>
-      {announceTarget!==null&&(()=>{
-        const p=items.find(item=>item.id===announceTarget);
-        return p?<div className="pl-announcement-confirm" role="group" aria-label="LINE送信の確認">
-          <div className="pl-announcement-confirm-head"><span className="pl-announcement-kicker">CONFIRMATION</span><h3>LINEグループに送信しますか？</h3><p>以下の練習案内を確認してください。</p></div>
-          <div className="pl-announcement-preview"><strong>{p.date}（{p.day}）{p.title}</strong><span><Glyph name="clock"/>{p.time}</span><span><Glyph name="pin"/>{p.place}</span></div>
-          <div className="pl-announcement-actions"><button type="button" className="pl-primary" onClick={()=>{setAnnounceTarget(null);setAnnounceDone(true)}}>送信する（プレビュー） <Glyph name="chevron"/></button><button type="button" className="pl-announcement-cancel" onClick={()=>setAnnounceTarget(null)}>キャンセル</button></div>
-        </div>:null;
-      })()}
-      {announceDone&&<p className="pl-form-success" role="status">送信操作のプレビューを完了しました。実際のLINEには送信していません。</p>}
-    </section>
-    <p className="tm-demo-note">管理者用の画面イメージです。Storybookでは実際の練習は作成しません。</p>
+    </>:<>
+      <button type="button" className="pl-admin-return" onClick={goAdminHub}>← 管理メニューに戻る</button>
+      <div className="pl-intro"><span className="pl-eyebrow">MANAGEMENT</span><h2>{({create:'練習を追加',edit:'練習を編集',cancel:'中止・中止解除',attendance:'来場実績を記録',announce:'LINEで練習を通知'} as const)[adminView]}</h2><p>{({create:'新しい練習の情報を入力してください。',edit:'変更する練習を選択してください。',cancel:'対象の練習を選択して状態を変更します。',attendance:'練習ごとに来場状況を記録します。',announce:'LINEグループへの案内を作成します。'} as const)[adminView]}</p></div>
+      {adminNotice&&<p className="pl-form-success" role="status">{adminNotice}</p>}
+      {adminView!=='create'&&<div className="pl-admin-selector" role="group" aria-label="練習を選択">{sorted.map(p=><button type="button" key={p.id} className={'tm-card pl-admin-select-item '+(adminTarget===p.id?'is-selected':'')} onClick={()=>selectAdminPractice(p)}><span><strong>{p.date}（{p.day}）{p.title}</strong><small>{p.time} · {p.place}</small></span><span className="pl-admin-select-status">{p.status}</span></button>)}</div>}
+      {(adminView==='create'||(adminView==='edit'&&activePractice))&&<section className="tm-card pl-admin-form">
+        <label>練習タイトル <span>必須</span><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="例：午前練習"/></label>
+        <label>開催日 <span>必須</span><input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
+        <div className="pl-admin-times"><label>開始時刻 <span>必須</span><input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/></label><label>終了時刻 <span>必須</span><input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></label></div>
+        <label>場所 <span>必須</span><input value={place} onChange={e=>setPlace(e.target.value)} placeholder="例：市営テニスコート A/B"/></label>
+        <label>練習内容 <span>任意</span><textarea value={detail} onChange={e=>setDetail(e.target.value)} placeholder="練習内容や連絡事項"/></label>
+        {adminError&&<p className="pl-form-error" role="alert">{adminError}</p>}
+        {created&&adminView==='create'&&<p className="pl-form-success" role="status">練習を追加しました。練習一覧で確認できます。</p>}
+        <button type="button" className="pl-primary" onClick={adminView==='create'?createPractice:editPractice}>{adminView==='create'?'新しい練習を追加':'変更を保存'} <Glyph name="chevron"/></button>
+      </section>}
+      {adminView==='cancel'&&activePractice&&<section className="tm-card pl-admin-action-panel"><h3>{activePractice.title}</h3><p>{activePractice.date} · {activePractice.time}</p>{activePractice.status==='雨天中止'||activePractice.status==='中止'?<><p>現在の状態：{activePractice.status}</p><button type="button" className="pl-primary" onClick={()=>setPracticeStatus('受付中')}>中止を解除して再開</button></>:<><label className="pl-admin-reason">中止理由<select value={cancelReason} onChange={e=>setCancelReason(e.target.value as '雨天中止'|'中止')}><option value="雨天中止">雨天中止</option><option value="中止">その他の理由で中止</option></select></label><button type="button" className="pl-admin-danger" onClick={()=>setPracticeStatus(cancelReason)}>この練習を中止する</button></>}</section>}
+      {adminView==='attendance'&&activePractice&&<section className="tm-card pl-admin-action-panel"><h3>{activePractice.title} の来場記録</h3><p>来場したメンバーをチェックしてください。</p><div className="pl-admin-attendance-count">来場 {participants.filter(p=>actuals[activePractice.id]?.[p.id]).length} / {participants.length} 人</div>{participants.map(person=><label key={person.id} className="pl-admin-attendance-row"><span><strong>{person.name}</strong><small>{person.status}{person.status==='参加'&&person.carpool==='必要'?' · 配車希望':''}</small></span><span className="pl-admin-actual-control"><input type="checkbox" checked={!!actuals[activePractice.id]?.[person.id]} onChange={e=>setActuals(prev=>({...prev,[activePractice.id]:{...prev[activePractice.id],[person.id]:e.target.checked}}))}/>来場</span></label>)}<p className="pl-admin-helper">チェック内容はこのプレビュー内で保持されます。</p></section>}
+      {adminView==='announce'&&activePractice&&<section className="tm-card pl-admin-announcements"><div className="pl-announcement-heading"><span className="pl-announcement-kicker">LINE NOTIFICATION</span><h2>送信内容を確認</h2><p>送信前に練習案内を確認してください。</p></div><div className="pl-announcement-preview"><strong>{activePractice.date}（{activePractice.day}）{activePractice.title}</strong><span><Glyph name="clock"/>{activePractice.time}</span><span><Glyph name="pin"/>{activePractice.place}</span></div>{activePractice.status==='雨天中止'||activePractice.status==='中止'?<p className="pl-form-error">中止中の練習は通知できません。</p>:<><button type="button" className="pl-primary pl-admin-send" onClick={()=>openAnnouncement(activePractice.id)}>LINE送信を確認 <Glyph name="chevron"/></button>{announceTarget===activePractice.id&&<div className="pl-announcement-confirm"><h3>LINEグループに送信しますか？</h3><p>この操作はプレビューです。実際には送信しません。</p><div className="pl-announcement-actions"><button type="button" className="pl-primary" onClick={()=>{setAnnounceTarget(null);setAnnounceDone(true)}}>送信する（プレビュー）</button><button type="button" className="pl-announcement-cancel" onClick={()=>setAnnounceTarget(null)}>キャンセル</button></div></div>}{announceDone&&<p className="pl-form-success" role="status">送信操作のプレビューを完了しました。</p>}</>}</section>}
+    </>}
+    <p className="tm-demo-note">Storybook用のモックです。実際のデータやLINEには反映しません。</p>
   </main>:tab!=='practice'?<main className="tm-content"><div className="tm-card pl-empty"><h2>{tab==='home'?'ホーム':'メンバー'}</h2><p>こちらは練習一覧のデザイン確認用です。</p><button onClick={()=>setTab('practice')}>練習予定に戻る</button></div></main>:
   selected?<main className="tm-content pl-content">
    <article className="tm-card pl-feature" style={{backgroundImage:'linear-gradient(90deg,rgba(255,255,255,.97),rgba(255,255,255,.79) 54%,rgba(255,255,255,.1)),url('+hero+')'}}>
@@ -128,6 +129,6 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
    {shown.length===0&&<div className="tm-card pl-empty">該当する練習はありません。</div>}
    <p className="tm-demo-note">Storybook用の架空データです。実際の練習情報は変更しません。</p>
   </main>}
-  <footer className="tm-bottom-nav" aria-label="画面切り替え">{([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'members',label:'メンバー',icon:'users'},{key:'admin',label:'管理',icon:'settings'}].filter(x=>isAdmin||x.key!=='admin') as Array<{key:'home'|'practice'|'members'|'admin';label:string;icon:'home'|'calendar'|'users'|'settings'}>).map(x=><button type="button" key={x.key} className={tab===x.key?'active':''} onClick={()=>{if(x.key==='admin'&&!isAdmin)return;setTab(x.key);setSelected(null);setRegistering(false)}}><Glyph name={x.icon}/><span>{x.label}</span></button>)}</footer>
+  <footer className="tm-bottom-nav" aria-label="画面切り替え">{([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'members',label:'メンバー',icon:'users'},{key:'admin',label:'管理',icon:'settings'}].filter(x=>isAdmin||x.key!=='admin') as Array<{key:'home'|'practice'|'members'|'admin';label:string;icon:'home'|'calendar'|'users'|'settings'}>).map(x=><button type="button" key={x.key} className={tab===x.key?'active':''} onClick={()=>{if(x.key==='admin'&&!isAdmin)return;if(x.key==='admin')goAdminHub();setTab(x.key);setSelected(null);setRegistering(false)}}><Glyph name={x.icon}/><span>{x.label}</span></button>)}</footer>
  </div></div>;
 }
