@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { BddRegistration, BddMembers } from './BddPreview';
+import { BddRegistration } from './BddPreview';
 
 const meta = {
   title: 'BDD確認 / 参加登録',
@@ -17,4 +17,3 @@ export const 過去の練習の閲覧: Story = { args: { initial: 'past' } };
 export const 開催予定なし: Story = { args: { initial: 'empty' } };
 export const 取得失敗: Story = { args: { initial: 'error' } };
 
-export { BddMembers };
