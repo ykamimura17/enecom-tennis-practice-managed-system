@@ -5,7 +5,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 import express from 'express';
 import cors from 'cors';
 import { SheetsService } from './services/sheets';
-import { isAdmin } from './middleware/adminAuth';
+import { isAdmin, requireAuth } from './middleware/adminAuth';
 import { createPracticesRouter } from './routes/practices';
 import { createAttendanceRouter } from './routes/attendance';
 
@@ -24,15 +24,11 @@ app.use(async (_req, _res, next) => {
   next();
 });
 
-app.use('/api/practices', createPracticesRouter(sheets));
-app.use('/api/attendance', createAttendanceRouter(sheets));
+app.use('/api/practices', requireAuth, createPracticesRouter(sheets));
+app.use('/api/attendance', requireAuth, createAttendanceRouter(sheets));
 
-app.get('/api/me', (req, res) => {
-  const userId = req.headers['x-line-user-id'] as string | undefined;
-  if (!userId) {
-    res.status(400).json({ error: 'x-line-user-id ヘッダーが必要です' });
-    return;
-  }
+app.get('/api/me', requireAuth, (_req, res) => {
+  const userId = res.locals.lineUserId as string;
   res.json({ userId, isAdmin: isAdmin(userId) });
 });
 

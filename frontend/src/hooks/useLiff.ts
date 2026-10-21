@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import liff from '@line/liff';
 import { UserInfo } from '../types';
-import { fetchMe } from '../api/client';
+import { fetchMe, setLineIdToken } from '../api/client';
 import { MOCK_USER } from '../mocks/data';
 
 interface UseLiffResult {
@@ -30,10 +30,13 @@ export function useLiff(): UseLiffResult {
           liff.login();
           return;
         }
+        const idToken = liff.getIDToken();
+        if (!idToken) throw new Error('LINE IDトークンを取得できませんでした');
+        setLineIdToken(idToken);
         const profile = await liff.getProfile();
         const me = await fetchMe(profile.userId);
         setUserInfo({
-          userId: profile.userId,
+          userId: me.userId,
           displayName: profile.displayName,
           isAdmin: me.isAdmin,
         });

@@ -12,6 +12,7 @@ const mockSheets = { getAttendance, upsertAttendance } as unknown as SheetsServi
 
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => { res.locals.lineUserId = req.headers['x-line-user-id'] || 'Uuser0001'; next(); });
 app.use('/api/attendance', createAttendanceRouter(mockSheets));
 
 const sampleAttendance: Attendance = {
@@ -99,10 +100,12 @@ describe('POST /api/attendance', () => {
     expect(upsertAttendance).not.toHaveBeenCalled();
   });
 
-  it('lineUserId が欠けている場合は 400 を返す', async () => {
+  it('lineUserId が本文に無い場合も検証済み本人IDで登録する', async () => {
     const { lineUserId: _, ...body } = validPostBody;
+    upsertAttendance.mockResolvedValue(sampleAttendance);
     const res = await request(app).post('/api/attendance').send(body);
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(200);
+    expect(upsertAttendance).toHaveBeenCalledWith(expect.objectContaining({ lineUserId: 'Uuser0001' }));
   });
 
   it('displayName が欠けている場合は 400 を返す', async () => {
