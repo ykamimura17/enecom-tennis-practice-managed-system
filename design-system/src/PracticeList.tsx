@@ -17,11 +17,11 @@ function Glyph({ name }: { name: 'back'|'calendar'|'pin'|'clock'|'chevron'|'home
  const paths = { back:<path d="m15 18-6-6 6-6"/>,calendar:<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></>,pin:<><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,clock:<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,chevron:<path d="m9 18 6-6-6-6"/>,home:<path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3Z"/>,users:<><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2"/><circle cx="17" cy="8" r="2"/></>,settings:<><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></>,check:<><rect x="4" y="4" width="16" height="18" rx="2"/><path d="m8 14 3 3 5-6"/></>,};
  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
-export function PracticeList({ initialFilter = 'すべて', initialPage = 'practice', initialStatus, initialCarpool, initialComment, initialMemberFilter = '全員' }: { initialFilter?: Filter; initialPage?: 'home'|'practice'|'members'|'admin'|'register'; initialStatus?: '参加'|'不参加'|'未回答'; initialCarpool?: '必要'|'不要'; initialComment?: string; initialMemberFilter?: '全員'|'参加予定'|'配車希望' }) {
+export function PracticeList({ initialFilter = 'すべて', initialPage = 'practice', initialStatus, initialCarpool, initialComment, initialMemberFilter = '全員', isAdmin = true }: { initialFilter?: Filter; initialPage?: 'home'|'practice'|'members'|'admin'|'register'; initialStatus?: '参加'|'不参加'|'未回答'; initialCarpool?: '必要'|'不要'; initialComment?: string; initialMemberFilter?: '全員'|'参加予定'|'配車希望'; isAdmin?: boolean }) {
  const [filter,setFilter]=useState<Filter>(initialFilter);
  const [items,setItems]=useState<Practice[]>(initialPractices);
  const [selected,setSelected]=useState<Practice|null>(initialPage==='register'?initialPractices[0]:null);
- const [tab,setTab]=useState<'practice'|'home'|'members'|'admin'>(initialPage==='register'?'practice':initialPage);
+ const [tab,setTab]=useState<'practice'|'home'|'members'|'admin'>(initialPage==='register'||(initialPage==='admin'&&!isAdmin)?'practice':initialPage);
  const [registering,setRegistering]=useState(initialPage==='register');
  const [answer,setAnswer]=useState<'参加'|'不参加'|'未回答'>(initialStatus??'未回答');
  const [carpool,setCarpool]=useState<'必要'|'不要'|undefined>(initialCarpool);
@@ -34,6 +34,8 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
  const [detail,setDetail]=useState('');
  const [adminError,setAdminError]=useState('');
  const [created,setCreated]=useState(false);
+ const [announceTarget,setAnnounceTarget]=useState<number|null>(null);
+ const [announceDone,setAnnounceDone]=useState(false);
  const sorted=[...items].sort((a,b)=>b.start.localeCompare(a.start)||b.id-a.id);
  const shown=sorted.filter(p=>filter==='すべて'||(filter==='受付中'?p.status==='受付中':p.response==='参加'));
  const openRegistration=(p:Practice)=>{setSelected(p);setAnswer(p.response);setCarpool(p.carpool);setComment(p.comment??'');setRegistering(true)};
@@ -43,6 +45,7 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
    setItems(prev=>prev.map(p=>p.id===selected.id?{...p,response:answer,carpool,comment}:p));
    backToList();
  };
+ const openAnnouncement=(id:number)=>{if(!isAdmin)return;setAnnounceTarget(id);setAnnounceDone(false)};
  const createPractice=()=>{
    if(!title.trim()||!date||!startTime||!endTime||!place.trim()){setAdminError('タイトル・開催日・開始／終了時刻・場所を入力してください。');return}
    if(endTime<=startTime){setAdminError('終了時刻は開始時刻より後にしてください。');return}
@@ -69,7 +72,7 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
     </>}
     <button className="pl-back-list" onClick={backToList}>← 練習一覧に戻る</button>
     <p className="tm-demo-note">Storybookプレビューです。実際の出欠データは更新しません。</p>
-  </main>:tab==='admin'?<main className="tm-content pl-content">
+  </main>:tab==='admin'&&isAdmin?<main className="tm-content pl-content">
     <div className="pl-intro"><span className="pl-eyebrow">MANAGEMENT</span><h2>練習を追加</h2><p>新しい練習を作成すると練習一覧に表示されます。</p></div>
     <section className="tm-card pl-admin-form">
       <label>練習タイトル <span>必須</span><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="例：午前練習"/></label>
@@ -81,6 +84,22 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
       {created&&<p className="pl-form-success" role="status">練習を追加しました。練習一覧で確認できます。</p>}
       <button className="pl-primary" onClick={createPractice}>新しい練習を追加 <Glyph name="chevron"/></button>
       <button className="pl-back-list" onClick={()=>{setTab('practice');setSelected(null)}}>練習一覧を見る →</button>
+    </section>
+    <section className="tm-card pl-admin-announcements">
+      <div className="pl-announcement-heading"><h2>LINEで練習を通知</h2><p>練習ごとにLINEグループへ案内できます。</p></div>
+      {sorted.filter(p=>p.status==='受付中').map(p=><div className="pl-announcement-item" key={p.id}>
+        <div><strong>{p.date}（{p.day}）{p.title}</strong><span>{p.time} / {p.place}</span></div>
+        <button type="button" onClick={()=>openAnnouncement(p.id)}>LINE送信</button>
+      </div>)}
+      {announceTarget!==null&&(()=>{
+        const p=items.find(item=>item.id===announceTarget);
+        return p?<div className="pl-announcement-confirm" role="group" aria-label="LINE送信の確認">
+          <strong>LINEグループに練習案内を送信しますか？</strong>
+          <p>{p.date}（{p.day}）{p.title}<br/>{p.time}<br/>{p.place}</p>
+          <div><button type="button" className="pl-primary" onClick={()=>{setAnnounceTarget(null);setAnnounceDone(true)}}>送信する（プレビュー）</button><button type="button" className="pl-announcement-cancel" onClick={()=>setAnnounceTarget(null)}>キャンセル</button></div>
+        </div>:null;
+      })()}
+      {announceDone&&<p className="pl-form-success" role="status">送信操作のプレビューを完了しました。実際のLINEには送信していません。</p>}
     </section>
     <p className="tm-demo-note">管理者用の画面イメージです。Storybookでは実際の練習は作成しません。</p>
   </main>:tab!=='practice'?<main className="tm-content"><div className="tm-card pl-empty"><h2>{tab==='home'?'ホーム':'メンバー'}</h2><p>こちらは練習一覧のデザイン確認用です。</p><button onClick={()=>setTab('practice')}>練習予定に戻る</button></div></main>:
@@ -102,6 +121,6 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
    {shown.length===0&&<div className="tm-card pl-empty">該当する練習はありません。</div>}
    <p className="tm-demo-note">Storybook用の架空データです。実際の練習情報は変更しません。</p>
   </main>}
-  <footer className="tm-bottom-nav" aria-label="画面切り替え">{([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'members',label:'メンバー',icon:'users'},{key:'admin',label:'管理',icon:'settings'}] as const).map(x=><button type="button" key={x.key} className={tab===x.key?'active':''} onClick={()=>{setTab(x.key);setSelected(null);setRegistering(false)}}><Glyph name={x.icon}/><span>{x.label}</span></button>)}</footer>
+  <footer className="tm-bottom-nav" aria-label="画面切り替え">{([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'members',label:'メンバー',icon:'users'},{key:'admin',label:'管理',icon:'settings'}].filter(x=>isAdmin||x.key!=='admin') as Array<{key:'home'|'practice'|'members'|'admin';label:string;icon:'home'|'calendar'|'users'|'settings'}>).map(x=><button type="button" key={x.key} className={tab===x.key?'active':''} onClick={()=>{if(x.key==='admin'&&!isAdmin)return;setTab(x.key);setSelected(null);setRegistering(false)}}><Glyph name={x.icon}/><span>{x.label}</span></button>)}</footer>
  </div></div>;
 }
