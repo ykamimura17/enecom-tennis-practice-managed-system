@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLiff } from './hooks/useLiff';
 import { MemberPage } from './pages/MemberPage';
 import { AdminPage } from './pages/AdminPage';
+import { MembersAttendancePage } from './pages/MembersAttendancePage';
 import { NotificationPanel } from './components/NotificationPanel';
 import { api } from './api/client';
 import { Practice } from './types';
 
-type Tab = 'member' | 'admin';
+type Tab = 'member' | 'members' | 'admin';
 
 const SEEN_KEY = 'seen_practice_ids';
 
@@ -98,16 +99,16 @@ export default function App() {
         </div>
       )}
 
-      {/* タブ（管理者のみ表示） */}
-      {userInfo.isAdmin && (
+      {/* 出欠閲覧は全員、管理操作は管理者のみ表示 */}
+      {(
         <div style={styles.tabBar}>
-          {(['member', 'admin'] as Tab[]).map(t => (
+          {(['member', 'members', ...(userInfo.isAdmin ? ['admin' as const] : [])] as Tab[]).map(t => (
             <button
               key={t}
               style={{ ...styles.tabBtn, ...(tab === t ? styles.tabBtnActive : {}) }}
               onClick={() => setTab(t)}
             >
-              {t === 'member' ? '参加登録' : '管理'}
+              {t === 'member' ? '参加登録' : t === 'members' ? 'メンバー' : '管理'}
             </button>
           ))}
         </div>
@@ -117,8 +118,12 @@ export default function App() {
       <main style={styles.main}>
         {tab === 'member' ? (
           <MemberPage userInfo={userInfo} />
-        ) : (
+        ) : tab === 'members' ? (
+          <MembersAttendancePage />
+        ) : userInfo.isAdmin ? (
           <AdminPage userInfo={userInfo} onPracticeCreated={loadPractices} />
+        ) : (
+          <MemberPage userInfo={userInfo} />
         )}
       </main>
     </div>
