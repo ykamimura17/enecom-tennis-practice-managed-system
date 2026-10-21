@@ -8,9 +8,10 @@ import type { SheetsService } from '../../services/sheets';
 const upsertAttendance = vi.fn();
 const getAttendance = vi.fn();
 const updateActual = vi.fn();
+const getPractices = vi.fn();
 const app = express();
 app.use(express.json());
-app.use('/api/attendance', requireAuth, createAttendanceRouter({ upsertAttendance, getAttendance, updateActual } as unknown as SheetsService));
+app.use('/api/attendance', requireAuth, createAttendanceRouter({ upsertAttendance, getAttendance, updateActual, getPractices } as unknown as SheetsService));
 app.get('/api/identity', requireAuth, (_req, res) => res.json({ userId: res.locals.lineUserId }));
 
 const validClaims = () => ({
@@ -22,6 +23,7 @@ const validClaims = () => ({
 
 beforeEach(() => {
   vi.resetAllMocks();
+  getPractices.mockResolvedValue([{ id: 'p1', date: '2099-01-01', status: '開催' }]);
   process.env.LINE_CHANNEL_ID = 'test-channel';
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => validClaims() }));
 });
@@ -59,7 +61,7 @@ describe('LINE ID token authentication', () => {
   it('uses verified identity when writing own attendance', async () => {
     upsertAttendance.mockImplementation(async data => ({ id: 'a1', ...data }));
     const res = await request(app).post('/api/attendance').set('Authorization', 'Bearer valid-token')
-      .send({ practiceId: 'p1', displayName: 'Me', status: '参加' });
+      .send({ practiceId: 'p1', displayName: 'Me', status: '参加', carpool: '不要' });
     expect(res.status).toBe(200);
     expect(upsertAttendance).toHaveBeenCalledWith(expect.objectContaining({ lineUserId: 'Uvalid' }));
   });
