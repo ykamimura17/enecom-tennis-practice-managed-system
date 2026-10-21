@@ -29,6 +29,8 @@ export default function App(){
   const [nextAttendance,setNextAttendance]=useState<Attendance[]>([]);
   const [seenIds,setSeenIds]=useState<Set<string>>(loadSeenIds);
   const [showNotifications,setShowNotifications]=useState(false);
+  const [dataVersion,setDataVersion]=useState(0);
+  const refreshData=useCallback(()=>{setDataVersion(v=>v+1);},[]);
   const hasUnread=practices.some(p=>!seenIds.has(p.id));
   const upcoming=[...practices].filter(p=>p.date>=todayLocal()).sort((a,b)=>a.date.localeCompare(b.date));
   const next=upcoming[0];
@@ -36,13 +38,21 @@ export default function App(){
   const loadPractices=useCallback(async()=>{
     try{setPractices(await api.getPractices());}catch{/* list errors are shown on the target page */}
   },[]);
-  useEffect(()=>{if(userInfo){void loadPractices();void api.registerMember(userInfo.displayName).catch(()=>{/* member page retries on next launch */});}},[userInfo,loadPractices]);
+  useEffect(()=>{if(userInfo)void loadPractices();},[userInfo,loadPractices]);
   useEffect(()=>{
     if(!next){setNextAttendance([]);return;}
     let active=true;
     api.getAttendance(next.id).then(list=>{if(active)setNextAttendance(list)}).catch(()=>{if(active)setNextAttendance([])});
     return()=>{active=false};
-  },[next?.id,tab]);
+  },[next?.id,tab,dataVersion]);
+  useEffect(()=>{
+    if(!userInfo)return;
+    const onFocus=()=>{void loadPractices();refreshData();};
+    window.addEventListener('focus',onFocus);
+    const onVisible=()=>{if(document.visibilityState==='visible')onFocus();};
+    document.addEventListener('visibilitychange',onVisible);
+    return()=>{window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onVisible);};
+  },[userInfo,loadPractices,refreshData]);
   function toggleNotifications(){
     if(!showNotifications){
       const updated=new Set([...seenIds,...practices.map(p=>p.id)]);
@@ -63,7 +73,7 @@ export default function App(){
         {next&&<><div className="a-home-heading"><h3>参加状況</h3><span>{next.date.replace(/-/g,'/')} の練習</span></div><div className="a-home-counts"><div><strong>{nextAttendance.filter(a=>a.status==='参加').length}<small>人</small></strong><span>参加</span></div><div><strong>{nextAttendance.filter(a=>a.status==='不参加').length}<small>人</small></strong><span>不参加</span></div><div><strong>{nextAttendance.filter(a=>a.status==='未回答').length}<small>人</small></strong><span>未回答（登録済）</span></div></div></>}
         <div className="a-home-heading"><h3>クイックアクセス</h3></div><div className="a-home-shortcuts"><button onClick={()=>setTab('practice')} type="button"><span><Glyph name="calendar"/></span><strong>練習予定</strong><small>今後の予定を見る</small></button><button onClick={()=>setTab('members')} type="button"><span><Glyph name="users"/></span><strong>メンバー</strong><small>出欠状況を確認</small></button></div>
         <div className="a-home-notice"><span><Glyph name="bell"/></span><div><h3>お知らせ</h3><p>{hasUnread?'新しい練習のお知らせがあります。':'練習の新着情報はこちらから確認できます。'}</p></div><button type="button" onClick={toggleNotifications}>確認</button></div>
-      </section>:tab==='practice'?<MemberPage userInfo={userInfo}/>:tab==='members'?<MembersAttendancePage/>:userInfo.isAdmin?<AdminPage userInfo={userInfo} onPracticeCreated={()=>void loadPractices()}/>:<MemberPage userInfo={userInfo}/>}
+      </section>:tab==='practice'?<MemberPage userInfo={userInfo} onSaved={refreshData}/>:tab==='members'?<MembersAttendancePage key={dataVersion}/>:userInfo.isAdmin?<AdminPage userInfo={userInfo} onPracticeCreated={()=>{void loadPractices();refreshData();}}/>:<MemberPage userInfo={userInfo} onSaved={refreshData}/>}
     </main>
     <nav className="a-app-bottom-nav" aria-label="メインメニュー">{tabs.map(item=><button type="button" key={item.id} onClick={()=>{setTab(item.id);setShowNotifications(false)}} className={tab===item.id?'active':''} aria-current={tab===item.id?'page':undefined}><Glyph name={item.icon}/><span>{item.id==='practice'?'練習':LABELS[item.id]}</span></button>)}</nav>
   </div>;
