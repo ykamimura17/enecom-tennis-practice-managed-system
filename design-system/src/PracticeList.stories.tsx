@@ -13,4 +13,4 @@ type Story = StoryObj<typeof meta>;
 export const すべての練習: Story = { args: { initialFilter: 'すべて' } };
 export const 受付中の練習: Story = { args: { initialFilter: '受付中' } };
 export const 参加予定の練習: Story = { args: { initialFilter: '参加予定' } };
-export const 過去の練習一覧: Story = { args: { initialFilter: 'すべて' } };
+export const 過去の練習一覧: Story = { args: { initialFilter: 'すべて', initialHistoryOnly: true } };
