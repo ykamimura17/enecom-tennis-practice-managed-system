@@ -45,7 +45,7 @@ function Shell({ title, children }: {title:string;children:ReactNode}) {
     <header className="tm-header"><button type="button" className="tm-back" aria-label="戻る（プレビュー）"><Icon name="back" size={28}/></button><h1>{title}</h1><span className="tm-header-space"/></header>
     <main className="tm-content bdd-content">{children}<p className="tm-demo-note">Storybookプレビューです。実際の出欠データは更新しません。</p></main>
     <footer className="tm-bottom-nav" aria-label="画面切り替え">
-      {([{label:'ホーム',icon:'home'},{label:'練習',icon:'calendar'},{label:'管理',icon:'clipboard'},{label:'メンバー',icon:'people'}] as const).map(item=><button type="button" key={item.label} className={(title==='参加登録'&&item.label==='登録')||(title==='メンバー'&&item.label==='メンバー')?'active':''} onClick={()=>{}}><Icon name={item.icon} size={23}/><span>{item.label}</span></button>)}
+      {([{label:'ホーム',icon:'home'},{label:'練習',icon:'calendar'},{label:'管理',icon:'clipboard'},{label:'メンバー',icon:'people'}] as const).map(item=><button type="button" key={item.label} className={(title==='メンバー'&&item.label==='メンバー')?'active':''} onClick={()=>{}}><Icon name={item.icon} size={23}/><span>{item.label}</span></button>)}
     </footer>
   </div></div>;
 }
