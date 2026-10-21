@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import hero from './assets/tennis-image.png';
 import { Icon as RegistrationIcon, Section, Choice } from './MobileRegistration';
+import { HomeMembers } from './HomeMembers';
 import './mobile.css';
 import './PracticeList.css';
 
@@ -16,15 +17,15 @@ function Glyph({ name }: { name: 'back'|'calendar'|'pin'|'clock'|'chevron'|'home
  const paths = { back:<path d="m15 18-6-6 6-6"/>,calendar:<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/></>,pin:<><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,clock:<><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,chevron:<path d="m9 18 6-6-6-6"/>,home:<path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3Z"/>,users:<><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2"/><circle cx="17" cy="8" r="2"/></>,settings:<><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></>,check:<><rect x="4" y="4" width="16" height="18" rx="2"/><path d="m8 14 3 3 5-6"/></>,};
  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
-export function PracticeList({ initialFilter = 'すべて' }: { initialFilter?: Filter }) {
+export function PracticeList({ initialFilter = 'すべて', initialPage = 'practice', initialStatus, initialCarpool, initialComment, initialMemberFilter = '全員' }: { initialFilter?: Filter; initialPage?: 'home'|'practice'|'members'|'admin'|'register'; initialStatus?: '参加'|'不参加'|'未回答'; initialCarpool?: '必要'|'不要'; initialComment?: string; initialMemberFilter?: '全員'|'参加予定'|'配車希望' }) {
  const [filter,setFilter]=useState<Filter>(initialFilter);
  const [items,setItems]=useState<Practice[]>(initialPractices);
- const [selected,setSelected]=useState<Practice|null>(null);
- const [tab,setTab]=useState<'practice'|'home'|'members'|'admin'>('practice');
- const [registering,setRegistering]=useState(false);
- const [answer,setAnswer]=useState<'参加'|'不参加'|'未回答'>('未回答');
- const [carpool,setCarpool]=useState<'必要'|'不要'|undefined>();
- const [comment,setComment]=useState('');
+ const [selected,setSelected]=useState<Practice|null>(initialPage==='register'?initialPractices[0]:null);
+ const [tab,setTab]=useState<'practice'|'home'|'members'|'admin'>(initialPage==='register'?'practice':initialPage);
+ const [registering,setRegistering]=useState(initialPage==='register');
+ const [answer,setAnswer]=useState<'参加'|'不参加'|'未回答'>(initialStatus??'未回答');
+ const [carpool,setCarpool]=useState<'必要'|'不要'|undefined>(initialCarpool);
+ const [comment,setComment]=useState(initialComment??'');
  const [title,setTitle]=useState('');
  const [date,setDate]=useState('');
  const [startTime,setStartTime]=useState('');
@@ -49,6 +50,7 @@ export function PracticeList({ initialFilter = 'すべて' }: { initialFilter?: 
    const p:Practice={id:Math.max(0,...items.map(p=>p.id))+1,start:date+'T'+startTime,date:(dateValue.getMonth()+1).toString().padStart(2,'0')+'/'+dateValue.getDate().toString().padStart(2,'0'),day:['日','月','火','水','木','金','土'][dateValue.getDay()],title:title.trim(),time:startTime+' – '+endTime,place:place.trim(),status:'受付中',response:'未回答',detail:detail.trim()};
    setItems(prev=>[...prev,p]);setAdminError('');setCreated(true);setTitle('');setDate('');setStartTime('');setEndTime('');setPlace('');setDetail('');
  };
+ if(!registering&&(tab==='home'||tab==='members'))return <HomeMembers key={tab} initialPage={tab} initialFilter={initialMemberFilter} onNavigate={page=>{setTab(page);setSelected(null);setRegistering(false)}}/>;
  return <div className="tm-stage"><div className="tm-phone pl-phone" lang="ja">
   <header className="tm-header"><button className="tm-back" aria-label="戻る" onClick={()=>{if(registering){backToList()}else if(selected){setSelected(null)}else{setTab('practice')}}}><Glyph name="back"/></button><h1>{registering?'参加登録':tab==='admin'?'管理':tab==='home'?'ホーム':tab==='members'?'メンバー':selected?'練習詳細':'練習予定'}</h1><span className="tm-header-space"/></header>
   {registering&&selected?<main className="tm-content pl-content">
