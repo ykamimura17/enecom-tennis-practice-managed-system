@@ -4,9 +4,11 @@ import { Practice, PracticeStatus, Attendance, AttendanceStatus, CarpoolStatus }
 
 const PRACTICES_SHEET = 'practices';
 const ATTENDANCE_SHEET = 'attendance';
+const MEMBERS_SHEET = 'members';
 
 // ヘッダー行
 const PRACTICES_HEADERS = ['id', 'title', 'date', 'time', 'location', 'description', 'createdAt', 'status', 'endTime'];
+const MEMBERS_HEADERS = ['lineUserId', 'displayName', 'updatedAt'];
 const ATTENDANCE_HEADERS = ['id', 'practiceId', 'lineUserId', 'displayName', 'status', 'updatedAt', 'carpool', 'actual'];
 
 export class SheetsService {
@@ -27,6 +29,11 @@ export class SheetsService {
   async init(): Promise<void> {
     await this.ensureSheet(PRACTICES_SHEET, PRACTICES_HEADERS);
     await this.ensureSheet(ATTENDANCE_SHEET, ATTENDANCE_HEADERS);
+    const metadata=await this.sheets.spreadsheets.get({spreadsheetId:this.spreadsheetId,fields:'sheets.properties.title'});
+    if(!(metadata.data.sheets??[]).some(sheet=>sheet.properties?.title===MEMBERS_SHEET)) {
+      await this.sheets.spreadsheets.batchUpdate({spreadsheetId:this.spreadsheetId,requestBody:{requests:[{addSheet:{properties:{title:MEMBERS_SHEET}}}]}});
+    }
+    await this.ensureSheet(MEMBERS_SHEET, MEMBERS_HEADERS);
   }
 
   private async ensureSheet(sheetName: string, headers: string[]): Promise<void> {
@@ -144,6 +151,37 @@ export class SheetsService {
       id: row[0], title: row[1], date: row[2], time: row[3],
       location: row[4], description: row[5], createdAt: row[6], status,
     };
+  }
+
+
+  // ───────────── Members ─────────────
+  async getMembers(): Promise<{lineUserId:string;displayName:string}[]> {
+    const res = await this.sheets.spreadsheets.values.get({spreadsheetId:this.spreadsheetId,range:`${MEMBERS_SHEET}!A:C`});
+    return (res.data.values??[]).slice(1).filter(row=>row[0]).map(row=>({lineUserId:row[0],displayName:row[1]||'名前未設定'}));
+  }
+
+  async upsertMember(lineUserId:string,displayName:string):Promise<{lineUserId:string;displayName:string}> {
+    const res=await this.sheets.spreadsheets.values.get({spreadsheetId:this.spreadsheetId,range:`${MEMBERS_SHEET}!A:C`});
+    const rows=res.data.values??[];
+    const index=rows.findIndex((row,i)=>i>0&&row[0]===lineUserId);
+    const values=[[lineUserId,displayName,new Date().toISOString()]];
+    if(index>=1){
+      await this.sheets.spreadsheets.values.update({spreadsheetId:this.spreadsheetId,range:`${MEMBERS_SHEET}!A${index+1}:C${index+1}`,valueInputOption:'RAW',requestBody:{values}});
+    }else{
+      await this.sheets.spreadsheets.values.append({spreadsheetId:this.spreadsheetId,range:`${MEMBERS_SHEET}!A:C`,valueInputOption:'RAW',requestBody:{values}});
+    }
+    return {lineUserId,displayName};
+  }
+
+  async getPracticeRoster(practiceId:string):Promise<Attendance[]> {
+    const [members,records]=await Promise.all([this.getMembers(),this.getAttendance(practiceId)]);
+    const byUser=new Map(records.map(a=>[a.lineUserId,a]));
+    const roster=members.map(member=>byUser.get(member.lineUserId)??{
+      id:`unanswered:${practiceId}:${member.lineUserId}`,practiceId,lineUserId:member.lineUserId,
+      displayName:member.displayName,status:'未回答' as AttendanceStatus,updatedAt:'',
+    });
+    const known=new Set(members.map(m=>m.lineUserId));
+    return [...roster,...records.filter(a=>!known.has(a.lineUserId))];
   }
 
   // ───────────── Attendance ─────────────
