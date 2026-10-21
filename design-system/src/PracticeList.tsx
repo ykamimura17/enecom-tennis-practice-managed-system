@@ -86,17 +86,24 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
       <button className="pl-back-list" onClick={()=>{setTab('practice');setSelected(null)}}>練習一覧を見る →</button>
     </section>
     <section className="tm-card pl-admin-announcements">
-      <div className="pl-announcement-heading"><h2>LINEで練習を通知</h2><p>練習ごとにLINEグループへ案内できます。</p></div>
-      {sorted.filter(p=>p.status==='受付中').map(p=><div className="pl-announcement-item" key={p.id}>
-        <div><strong>{p.date}（{p.day}）{p.title}</strong><span>{p.time} / {p.place}</span></div>
-        <button type="button" onClick={()=>openAnnouncement(p.id)}>LINE送信</button>
-      </div>)}
+      <div className="pl-announcement-heading">
+        <span className="pl-announcement-kicker">LINE NOTIFICATION</span>
+        <h2>LINEで練習を通知</h2>
+        <p>通知する練習を選択して、LINEグループへ案内します。</p>
+      </div>
+      <div className="pl-announcement-list">
+        {sorted.filter(p=>p.status==='受付中').map(p=><div className="pl-announcement-item" key={p.id}>
+          <div className="pl-announcement-date"><strong>{p.date}</strong><span>{p.day}</span></div>
+          <div className="pl-announcement-info"><strong>{p.title}</strong><span><Glyph name="clock"/>{p.time}</span><span><Glyph name="pin"/>{p.place}</span></div>
+          <button type="button" className="pl-line-button" onClick={()=>openAnnouncement(p.id)}>LINE送信 <Glyph name="chevron"/></button>
+        </div>)}
+      </div>
       {announceTarget!==null&&(()=>{
         const p=items.find(item=>item.id===announceTarget);
         return p?<div className="pl-announcement-confirm" role="group" aria-label="LINE送信の確認">
-          <strong>LINEグループに練習案内を送信しますか？</strong>
-          <p>{p.date}（{p.day}）{p.title}<br/>{p.time}<br/>{p.place}</p>
-          <div><button type="button" className="pl-primary" onClick={()=>{setAnnounceTarget(null);setAnnounceDone(true)}}>送信する（プレビュー）</button><button type="button" className="pl-announcement-cancel" onClick={()=>setAnnounceTarget(null)}>キャンセル</button></div>
+          <div className="pl-announcement-confirm-head"><span className="pl-announcement-kicker">CONFIRMATION</span><h3>LINEグループに送信しますか？</h3><p>以下の練習案内を確認してください。</p></div>
+          <div className="pl-announcement-preview"><strong>{p.date}（{p.day}）{p.title}</strong><span><Glyph name="clock"/>{p.time}</span><span><Glyph name="pin"/>{p.place}</span></div>
+          <div className="pl-announcement-actions"><button type="button" className="pl-primary" onClick={()=>{setAnnounceTarget(null);setAnnounceDone(true)}}>送信する（プレビュー） <Glyph name="chevron"/></button><button type="button" className="pl-announcement-cancel" onClick={()=>setAnnounceTarget(null)}>キャンセル</button></div>
         </div>:null;
       })()}
       {announceDone&&<p className="pl-form-success" role="status">送信操作のプレビューを完了しました。実際のLINEには送信していません。</p>}
