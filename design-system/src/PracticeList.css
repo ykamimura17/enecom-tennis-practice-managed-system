@@ -4,7 +4,7 @@
 .pl-admin-form label span{display:inline;color:#25764c;font-size:11px;font-weight:600}
 .pl-admin-form input,.pl-admin-form textarea{width:100%;min-width:0;border:1px solid #dce4eb;background:#fff;border-radius:12px;padding:12px;font:inherit;font-size:14px;color:#233647}
 .pl-admin-form textarea{min-height:90px;resize:vertical}
-.pl-admin-times{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pl-admin-times{display:flex;flex-direction:column;gap:0}
 .pl-form-error{color:#a33333;background:#fff0f0;border-radius:9px;padding:12px;font-size:13px}
 .pl-form-success{color:#17643c;background:#e3f5ea;border-radius:9px;padding:12px;font-size:13px}
 .pl-content .tm-submit:disabled{opacity:.5;cursor:not-allowed}
