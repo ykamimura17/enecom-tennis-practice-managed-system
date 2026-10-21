@@ -33,13 +33,13 @@ function Nav({active,onChange}:{active:Page;onChange:(page:Page)=>void}){
  const links=([{page:'home',label:'ホーム',icon:'home'},{page:'practice',label:'練習',icon:'calendar'},{page:'admin',label:'管理',icon:'check'},{page:'members',label:'メンバー',icon:'users'}] as const);
  return <footer className="tm-bottom-nav" aria-label="画面切り替え">{links.map(l=><button key={l.page} type="button" className={active===l.page?'active':''} onClick={()=>onChange(l.page)}><Icon name={l.icon} size={23}/><span>{l.label}</span></button>)}</footer>;
 }
-export function HomeMembers({initialPage='home',initialFilter='全員'}:{initialPage?:'home'|'members';initialFilter?:Filter}){
+export function HomeMembers({initialPage='home',initialFilter='全員',onNavigate}:{initialPage?:'home'|'members';initialFilter?:Filter;onNavigate?:(page:Page)=>void}){
  const [page,setPage]=useState<Page>(initialPage);
  const [filter,setFilter]=useState<Filter>(initialFilter);
  const [query,setQuery]=useState('');
  const [selected,setSelected]=useState<Member|null>(null);
  const visible=useMemo(()=>members.filter(m=>(filter==='全員'||(filter==='参加予定'?m.attendance==='参加':m.carpool))&&m.name.replaceAll(' ','').includes(query.replaceAll(' ',''))),[filter,query]);
- const go=(p:Page)=>{setSelected(null);setPage(p)};
+ const go=(p:Page)=>{setSelected(null);if(onNavigate){onNavigate(p)}else{setPage(p)}};
  return <div className="tm-stage"><div className="tm-phone hm-phone" lang="ja">
   <header className="tm-header"><button className="tm-back" type="button" aria-label="ホームに戻る" onClick={()=>go('home')}><Icon name="back" size={26}/></button><h1>{selected?'メンバー詳細':page==='home'?'ホーム':page==='members'?'メンバー':'プレビュー'}</h1><span className="tm-header-space"/></header>
   {page==='home'?<main className="tm-content hm-content">
