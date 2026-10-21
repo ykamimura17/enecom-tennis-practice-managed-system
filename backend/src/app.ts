@@ -27,6 +27,15 @@ app.use(async (_req, _res, next) => {
 app.use('/api/practices', requireAuth, createPracticesRouter(sheets));
 app.use('/api/attendance', requireAuth, createAttendanceRouter(sheets));
 
+app.put('/api/members/me', requireAuth, async (req, res) => {
+  const displayName=req.body?.displayName;
+  if (typeof displayName!=='string'||!displayName.trim()||displayName.length>100) {
+    res.status(400).json({error:'有効な表示名を指定してください'});return;
+  }
+  try {res.json(await sheets.upsertMember(res.locals.lineUserId as string,displayName.trim()));}
+  catch {res.status(500).json({error:'メンバー登録に失敗しました'});}
+});
+
 app.get('/api/me', requireAuth, (_req, res) => {
   const userId = res.locals.lineUserId as string;
   res.json({ userId, isAdmin: isAdmin(userId) });
