@@ -10,10 +10,11 @@ const ADMIN_ID = 'Uadmin0001';
 // モック関数を個別に保持することで型付きアクセスを可能にする
 const getPractices       = vi.fn();
 const createPractice     = vi.fn();
+const updatePractice     = vi.fn();
 const updatePracticeStatus = vi.fn();
 const init               = vi.fn();
 
-const mockSheets = { getPractices, createPractice, updatePracticeStatus, init } as unknown as SheetsService;
+const mockSheets = { getPractices, createPractice, updatePractice, updatePracticeStatus, init } as unknown as SheetsService;
 
 const app = express();
 app.use(express.json());
@@ -223,5 +224,44 @@ describe('POST /api/practices/:id/announce', () => {
       .post('/api/practices/p-001/announce')
       .set('x-line-user-id', ADMIN_ID);
     expect(res.status).toBe(500);
+  });
+});
+
+
+describe('PUT /api/practices/:id - 管理者による練習編集', () => {
+  it('管理者は既存練習を編集できる', async () => {
+    updatePractice.mockResolvedValue({...samplePractice,title:'変更後'});
+    const res=await request(app).put('/api/practices/p-001').set('x-line-user-id',ADMIN_ID).send({...newPracticeBody,title:'変更後'});
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('変更後');
+    expect(updatePractice).toHaveBeenCalledWith('p-001',expect.objectContaining({title:'変更後'}));
+  });
+  it('非管理者は編集できない', async () => {
+    const res=await request(app).put('/api/practices/p-001').set('x-line-user-id','Uother').send(newPracticeBody);
+    expect(res.status).toBe(403);
+    expect(updatePractice).not.toHaveBeenCalled();
+  });
+  it('入力不足は400', async () => {
+    const res=await request(app).put('/api/practices/p-001').set('x-line-user-id',ADMIN_ID).send({title:'練習'});
+    expect(res.status).toBe(400);
+  });
+  it('存在しない練習は404', async () => {
+    updatePractice.mockRejectedValue(new Error('練習が見つかりません'));
+    const res=await request(app).put('/api/practices/missing').set('x-line-user-id',ADMIN_ID).send(newPracticeBody);
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('管理者による中止と開催再開', () => {
+  it('中止から開催に戻せる', async () => {
+    updatePracticeStatus.mockResolvedValue({...samplePractice,status:'中止'});
+    const cancel=await request(app).patch('/api/practices/p-001/status').set('x-line-user-id',ADMIN_ID).send({status:'中止'});
+    expect(cancel.status).toBe(200);
+    updatePracticeStatus.mockResolvedValue({...samplePractice,status:'開催'});
+    const reopen=await request(app).patch('/api/practices/p-001/status').set('x-line-user-id',ADMIN_ID).send({status:'開催'});
+    expect(reopen.status).toBe(200);
+    expect(reopen.body.status).toBe('開催');
+    expect(updatePracticeStatus).toHaveBeenNthCalledWith(1,'p-001','中止');
+    expect(updatePracticeStatus).toHaveBeenNthCalledWith(2,'p-001','開催');
   });
 });
