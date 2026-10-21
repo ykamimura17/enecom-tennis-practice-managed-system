@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { HomeMembers } from './HomeMembers';
+import { PracticeList } from './PracticeList';
 
 const meta = {
   title: 'スマホデザイン / A案・ミニマルカード型 / メンバー',
   component: HomeMembers,
+  render: args => <PracticeList initialPage={args.initialPage} initialMemberFilter={args.initialFilter}/>,
   parameters: { layout: 'fullscreen' },
   args: { initialPage: 'members', initialFilter: '全員' },
   argTypes: {
