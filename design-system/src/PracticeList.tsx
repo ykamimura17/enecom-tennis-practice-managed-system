@@ -100,6 +100,6 @@ export function PracticeList({ initialFilter = 'すべて' }: { initialFilter?: 
    {shown.length===0&&<div className="tm-card pl-empty">該当する練習はありません。</div>}
    <p className="tm-demo-note">Storybook用の架空データです。実際の練習情報は変更しません。</p>
   </main>}
-  <footer className="tm-bottom-nav" aria-label="画面切り替え">{([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'admin',label:'管理',icon:'settings'},{key:'members',label:'メンバー',icon:'users'}] as const).map(x=><button type="button" key={x.key} className={tab===x.key?'active':''} onClick={()=>{setTab(x.key);setSelected(null);setRegistering(false)}}><Glyph name={x.icon}/><span>{x.label}</span></button>)}</footer>
+  <footer className="tm-bottom-nav" aria-label="画面切り替え">{([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'members',label:'メンバー',icon:'users'},{key:'admin',label:'管理',icon:'settings'}] as const).map(x=><button type="button" key={x.key} className={tab===x.key?'active':''} onClick={()=>{setTab(x.key);setSelected(null);setRegistering(false)}}><Glyph name={x.icon}/><span>{x.label}</span></button>)}</footer>
  </div></div>;
 }
