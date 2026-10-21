@@ -24,8 +24,8 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Audit dependencies (report existing vulnerabilities)
@@ -36,7 +36,7 @@ jobs:
           if [ "${result:-0}" -ne 0 ]; then
             echo "::warning::Dependency audit reported vulnerabilities for ${{ matrix.directory }}. Review audit artifact before enabling blocking."
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: audit-${{ matrix.directory }}
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install OSS Semgrep
         run: python -m pip install --user 'semgrep==1.140.0' 'pydantic<2.12'
       - name: Run project security rules
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Scan tracked files for exposed secrets
         run: |
           docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.24.3 dir /repo --redact --exit-code 1
