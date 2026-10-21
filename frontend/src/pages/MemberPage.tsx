@@ -15,7 +15,7 @@ function localToday() {
 const PAGE_SIZE=10;
 type Filter='すべて'|'参加予定';
 
-export function MemberPage({userInfo}:{userInfo:UserInfo}) {
+export function MemberPage({userInfo,onSaved}:{userInfo:UserInfo;onSaved?:()=>void}) {
   const [practices,setPractices]=useState<Practice[]>([]);
   const [attendances,setAttendances]=useState<Record<string,Attendance>>({});
   const [selectedId,setSelectedId]=useState<string|null>(null);
@@ -62,6 +62,7 @@ export function MemberPage({userInfo}:{userInfo:UserInfo}) {
     try {
       const saved=await api.upsertAttendance(userInfo.userId,userInfo.displayName,selected.id,answer,answer==='参加'?carpool:undefined);
       setAttendances(prev=>({...prev,[selected.id]:saved}));
+      onSaved?.();
       setSelectedId(null);
     } catch {setError('出欠の登録に失敗しました');}
     finally {setSaving(false);}
