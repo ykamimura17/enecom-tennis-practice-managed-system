@@ -59,3 +59,13 @@
 .pl-admin-actual-control{display:flex;gap:6px;align-items:center}
 .pl-admin-actual-control input{accent-color:#267c50}
 .pl-admin-send{margin-top:15px}
+
+.pl-past-section{margin-top:28px;padding-top:20px;border-top:1px solid #e2ebe5}
+.pl-past-heading{align-items:flex-end;margin-bottom:7px}
+.pl-past-eyebrow{display:block;color:#40835e;font-size:10px;font-weight:800;letter-spacing:.16em;margin-bottom:6px}
+.pl-past-description{font-size:12px;color:#778793;line-height:1.7;margin:0 3px 15px}
+.pl-past-item{background:#fff}
+.pl-past-date{background:#f0f3f2;color:#657c73}
+.pl-past-more{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;padding:14px 10px;margin:8px 0 20px;border:1px solid #cddfd3;border-radius:12px;background:#fff;color:#27784f;font-weight:800;font-size:13px;cursor:pointer}
+.pl-past-more span{font-size:12px;font-weight:500}
+.pl-past-more svg{width:15px;height:15px}
