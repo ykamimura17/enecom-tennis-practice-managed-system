@@ -1,0 +1,45 @@
+name: Storybook Chromatic Preview
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'design-system/**'
+      - '.github/workflows/storybook-chromatic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-storybook:
+    name: publish-storybook
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install Storybook dependencies
+        working-directory: design-system
+        run: npm install --no-audit --no-fund
+      - name: Typecheck Storybook preview
+        working-directory: design-system
+        run: npm run typecheck
+      - name: Build Storybook
+        working-directory: design-system
+        run: npm run build-storybook
+      - name: Publish Storybook to Chromatic
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        working-directory: design-system
+        env:
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+        run: |
+          if [ -z "$CHROMATIC_PROJECT_TOKEN" ]; then
+            echo "::error::CHROMATIC_PROJECT_TOKEN is not configured"
+            exit 1
+          fi
+          npx --yes chromatic@13 --project-token="$CHROMATIC_PROJECT_TOKEN" --storybook-build-dir=storybook-static --exit-zero-on-changes --skip='dependabot/**'
