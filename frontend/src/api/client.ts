@@ -38,6 +38,16 @@ export const api = {
     return request('/api/practices');
   },
 
+  registerMember(displayName:string):Promise<{lineUserId:string;displayName:string}> {
+    if(IS_MOCK)return Promise.resolve({lineUserId:MOCK_USER.userId,displayName});
+    return request('/api/members/me',{method:'PUT',body:JSON.stringify({displayName})});
+  },
+
+  getPracticeRoster(practiceId:string):Promise<Attendance[]> {
+    if(IS_MOCK)return this.getAttendance(practiceId);
+    return request(`/api/attendance/${encodeURIComponent(practiceId)}/roster`);
+  },
+
   getAttendance(practiceId: string): Promise<Attendance[]> {
     if (IS_MOCK) return Promise.resolve(mockAttendances.filter(a => a.practiceId === practiceId));
     return request(`/api/attendance/${practiceId}`);
