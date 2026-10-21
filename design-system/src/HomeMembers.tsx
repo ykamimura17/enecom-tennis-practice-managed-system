@@ -43,7 +43,7 @@ export function HomeMembers({initialPage='home',initialFilter='全員',onNavigat
  const eventMembers=useMemo(()=>members.map((m,i)=>{if(!selectedEvent||eventIndex===0)return m;const attendance=(['参加','不参加','未回答'] as const)[(i+eventIndex)%3];return {...m,attendance,carpool:attendance==='参加'&&(i+eventIndex)%2===0};}),[selectedEvent,eventIndex]);
  const participants=eventMembers.filter(m=>m.attendance==='参加').length;
  const [selected,setSelected]=useState<Member|null>(null);
- const visible=useMemo(()=>eventMembers.filter(m=>(filter==='全員'||(filter==='参加予定'?m.attendance==='参加':m.carpool))&&m.name.replaceAll(' ','').includes(query.replaceAll(' ',''))),[eventMembers,filter]);
+ const visible=useMemo(()=>eventMembers.filter(m=>(filter==='全員'||(filter==='参加予定'?m.attendance==='参加':m.carpool))),[eventMembers,filter]);
  const go=(p:Page)=>{if(p==='admin'&&!isAdmin)return;setSelected(null);if(onNavigate){onNavigate(p)}else{setPage(p)}};
  return <div className="tm-stage"><div className="tm-phone hm-phone" lang="ja">
   <header className="tm-header"><button className="tm-back" type="button" aria-label="ホームに戻る" onClick={()=>go('home')}><Icon name="back" size={26}/></button><h1>{selected?'メンバー詳細':page==='home'?'ホーム':page==='members'?'メンバー':'プレビュー'}</h1><span className="tm-header-space"/></header>
