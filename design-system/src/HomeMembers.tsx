@@ -3,7 +3,7 @@ import hero from './assets/tennis-image.png';
 import './mobile.css';
 import './HomeMembers.css';
 
-type Page = 'home' | 'practice' | 'register' | 'members';
+type Page = 'home' | 'practice' | 'members' | 'admin';
 type Filter = '全員' | '参加予定' | '配車希望';
 type Member = { id:number; name:string; initials:string; attendance:'参加'|'不参加'|'未回答'; carpool:boolean; accent:string };
 const members:Member[] = [
@@ -30,7 +30,7 @@ const iconPaths={
 type IconName=keyof typeof iconPaths;
 function Icon({name,size=21}:{name:IconName;size?:number}){return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{iconPaths[name]}</svg>}
 function Nav({active,onChange}:{active:Page;onChange:(page:Page)=>void}){
- const links=([{page:'home',label:'ホーム',icon:'home'},{page:'practice',label:'練習',icon:'calendar'},{page:'register',label:'登録',icon:'check'},{page:'members',label:'メンバー',icon:'users'}] as const);
+ const links=([{page:'home',label:'ホーム',icon:'home'},{page:'practice',label:'練習',icon:'calendar'},{page:'admin',label:'管理',icon:'check'},{page:'members',label:'メンバー',icon:'users'}] as const);
  return <footer className="tm-bottom-nav" aria-label="画面切り替え">{links.map(l=><button key={l.page} type="button" className={active===l.page?'active':''} onClick={()=>onChange(l.page)}><Icon name={l.icon} size={23}/><span>{l.label}</span></button>)}</footer>;
 }
 export function HomeMembers({initialPage='home',initialFilter='全員'}:{initialPage?:'home'|'members';initialFilter?:Filter}){
@@ -44,7 +44,7 @@ export function HomeMembers({initialPage='home',initialFilter='全員'}:{initial
   <header className="tm-header"><button className="tm-back" type="button" aria-label="ホームに戻る" onClick={()=>go('home')}><Icon name="back" size={26}/></button><h1>{selected?'メンバー詳細':page==='home'?'ホーム':page==='members'?'メンバー':'プレビュー'}</h1><span className="tm-header-space"/></header>
   {page==='home'?<main className="tm-content hm-content">
    <div className="hm-greeting"><p>おかえりなさい</p><h2>テニス部へようこそ <span aria-hidden="true">🎾</span></h2><p>次の練習を確認して、参加予定を登録しましょう。</p></div>
-   <section className="tm-card hm-next" style={{backgroundImage:'linear-gradient(90deg,rgba(255,255,255,.98),rgba(255,255,255,.89) 49%,rgba(255,255,255,.23)),url('+hero+')'}}><div className="hm-next-top"><span className="hm-tag">次の練習</span><span className="hm-tag green">受付中</span></div><h2>10/26(土) 午前練習</h2><p><Icon name="clock"/>10:00 – 12:00</p><p><Icon name="pin"/>市営テニスコート A/B</p><div className="hm-next-bottom"><span>あなたの回答：<strong>未回答</strong></span><button type="button" onClick={()=>go('register')}>参加登録 <Icon name="arrow" size={17}/></button></div></section>
+   <section className="tm-card hm-next" style={{backgroundImage:'linear-gradient(90deg,rgba(255,255,255,.98),rgba(255,255,255,.89) 49%,rgba(255,255,255,.23)),url('+hero+')'}}><div className="hm-next-top"><span className="hm-tag">次の練習</span><span className="hm-tag green">受付中</span></div><h2>10/26(土) 午前練習</h2><p><Icon name="clock"/>10:00 – 12:00</p><p><Icon name="pin"/>市営テニスコート A/B</p><div className="hm-next-bottom"><span>あなたの回答：<strong>未回答</strong></span><button type="button" onClick={()=>go('practice')}>参加登録 <Icon name="arrow" size={17}/></button></div></section>
    <div className="hm-heading"><h3>参加状況</h3><span>10/26(土) の練習</span></div>
    <div className="hm-counts"><div className="tm-card"><strong>3<span>人</span></strong><p>参加</p></div><div className="tm-card"><strong>1<span>人</span></strong><p>不参加</p></div><div className="tm-card"><strong>2<span>人</span></strong><p>未回答</p></div></div>
    <div className="hm-heading"><h3>クイックアクセス</h3></div>
@@ -61,7 +61,7 @@ export function HomeMembers({initialPage='home',initialFilter='全員'}:{initial
     <div className="tm-card hm-members-list">{visible.map(m=><button type="button" key={m.id} onClick={()=>setSelected(m)} className="hm-member"><span className="hm-avatar" style={{background:m.accent}}>{m.initials}</span><span className="hm-member-name"><strong>{m.name}</strong>{m.carpool&&<small><Icon name="car" size={14}/> 配車希望あり</small>}</span><span className={'hm-person-status '+(m.attendance==='参加'?'going':m.attendance==='不参加'?'notgoing':'')}>{m.attendance}</span><Icon name="arrow" size={16}/></button>)}{visible.length===0&&<div className="hm-empty">該当するメンバーはいません。</div>}</div>
     <p className="tm-demo-note">表示名・回答はデザイン確認用の架空データです。</p>
    </>}
-  </main>:<main className="tm-content hm-content"><section className="tm-card hm-preview"><h2>{page==='practice'?'練習予定':'参加登録'}</h2><p>こちらの画面は別のStorybookストーリーで確認できます。</p><button type="button" onClick={()=>go('home')}>ホームに戻る</button></section></main>}
+  </main>:<main className="tm-content hm-content"><section className="tm-card hm-preview"><h2>{page==='practice'?'練習予定':'管理'}</h2><p>こちらの画面は別のStorybookストーリーで確認できます。</p><button type="button" onClick={()=>go('home')}>ホームに戻る</button></section></main>}
   <Nav active={page} onChange={go}/>
  </div></div>;
 }
