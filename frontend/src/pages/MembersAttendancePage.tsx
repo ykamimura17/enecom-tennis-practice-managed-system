@@ -59,7 +59,7 @@ export function MembersAttendancePage() {
   }), [attendances]);
   const visible = attendances.filter(a => (
     (filter === '全員' || (filter === '参加予定' ? a.status === '参加' : a.status === '参加' && a.carpool === '必要')) &&
-    a.displayName.replaceAll(' ', '').includes(query.replaceAll(' ', ''))
+    a.displayName.replace(/ /g, '').includes(query.replace(/ /g, ''))
   ));
 
   return <section className="live-members">
@@ -67,10 +67,10 @@ export function MembersAttendancePage() {
     <label className="live-members-selector"><span>対象イベント</span>
       <select value={practiceId} onChange={e => { setPracticeId(e.target.value); setQuery(''); setFilter('全員'); }} disabled={!practices.length} aria-label="出欠を表示するイベント">
         {!practices.length && <option value="">練習がありません</option>}
-        {practices.map(p => <option key={p.id} value={p.id}>{p.date.replaceAll('-', '/')} {p.title}{p.status !== '開催' ? '（' + p.status + '）' : ''}</option>)}
+        {practices.map(p => <option key={p.id} value={p.id}>{p.date.replace(/-/g, '/')} {p.title}{p.status !== '開催' ? '（' + p.status + '）' : ''}</option>)}
       </select>
     </label>
-    {selectedPractice && <div className="live-members-event"><strong>{selectedPractice.title}</strong><span>{selectedPractice.date.replaceAll('-', '/')} · {selectedPractice.time} · {selectedPractice.location}</span></div>}
+    {selectedPractice && <div className="live-members-event"><strong>{selectedPractice.title}</strong><span>{selectedPractice.date.replace(/-/g, '/')} · {selectedPractice.time} · {selectedPractice.location}</span></div>}
     {error && <p role="alert" className="live-members-error">{error}</p>}
     {loading ? <p className="live-members-empty">読み込み中...</p> : <>
       <div className="live-members-counts"><div><strong>{counts.attending}</strong><span>参加</span></div><div><strong>{counts.absent}</strong><span>不参加</span></div><div><strong>{counts.unanswered}</strong><span>未回答</span></div></div>
