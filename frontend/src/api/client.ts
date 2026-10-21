@@ -18,6 +18,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({})) as { error?: string };
+    if (res.status === 401) throw new Error('LINEの認証期限が切れました。アプリを開き直してください');
+    if (res.status === 403) throw new Error('この操作を行う権限がありません');
     throw new Error(body.error ?? `HTTP ${res.status}`);
   }
   return res.json() as Promise<T>;

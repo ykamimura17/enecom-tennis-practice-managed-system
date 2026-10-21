@@ -7,8 +7,9 @@ import type { Attendance } from '../../types';
 
 const getAttendance    = vi.fn();
 const upsertAttendance = vi.fn();
+const getPractices = vi.fn();
 
-const mockSheets = { getAttendance, upsertAttendance } as unknown as SheetsService;
+const mockSheets = { getAttendance, upsertAttendance, getPractices } as unknown as SheetsService;
 
 const app = express();
 app.use(express.json());
@@ -29,10 +30,12 @@ const validPostBody = {
   lineUserId:  'Uuser0001',
   displayName: 'テストユーザー',
   status:      '参加',
+  carpool:     '不要',
 };
 
 beforeEach(() => {
   vi.resetAllMocks();
+  getPractices.mockResolvedValue([{ id: 'p-001', date: '2099-01-01', status: '開催' }]);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -120,6 +123,31 @@ describe('POST /api/attendance', () => {
       .send({ ...validPostBody, status: '未定' });
     expect(res.status).toBe(400);
     expect(res.body.error).toContain('参加');
+  });
+
+  it('存在しない練習には登録できない（404）', async () => {
+    getPractices.mockResolvedValue([]);
+    const res = await request(app).post('/api/attendance').send(validPostBody);
+    expect(res.status).toBe(404);
+    expect(upsertAttendance).not.toHaveBeenCalled();
+  });
+
+  it('中止した練習には登録できない（409）', async () => {
+    getPractices.mockResolvedValue([{ id: 'p-001', date: '2099-01-01', status: '中止' }]);
+    const res = await request(app).post('/api/attendance').send(validPostBody);
+    expect(res.status).toBe(409);
+  });
+
+  it('過去の練習には登録できない（409）', async () => {
+    getPractices.mockResolvedValue([{ id: 'p-001', date: '2020-01-01', status: '開催' }]);
+    const res = await request(app).post('/api/attendance').send(validPostBody);
+    expect(res.status).toBe(409);
+  });
+
+  it('参加時に配車が未指定なら400', async () => {
+    const { carpool: _, ...body } = validPostBody;
+    const res = await request(app).post('/api/attendance').send(body);
+    expect(res.status).toBe(400);
   });
 
   it('Sheets エラー時に 500 を返す', async () => {

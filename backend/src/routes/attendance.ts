@@ -25,11 +25,11 @@ export function createAttendanceRouter(sheets: SheetsService) {
       res.status(403).json({ error: '他人の出欠は変更できません' });
       return;
     }
-    if (!practiceId || !displayName || !status) {
+    if (typeof practiceId !== 'string' || !practiceId.trim() || typeof displayName !== 'string' || !displayName.trim() || typeof status !== 'string' || !status) {
       res.status(400).json({ error: '全フィールドが必須です' });
       return;
     }
-    if (!VALID_STATUSES.includes(status)) {
+    if (!VALID_STATUSES.includes(status as AttendanceStatus)) {
       res.status(400).json({ error: 'status は 参加/不参加/未回答 のいずれかです' });
       return;
     }
@@ -37,9 +37,24 @@ export function createAttendanceRouter(sheets: SheetsService) {
       res.status(400).json({ error: 'carpool は 必要/不要 のいずれかです' });
       return;
     }
+    if (status === '参加' && !VALID_CARPOOLS.includes(carpool)) {
+      res.status(400).json({ error: '参加の場合は配車の要否を指定してください' });
+      return;
+    }
     try {
+      const practices = await sheets.getPractices();
+      const practice = practices.find(p => p.id === practiceId);
+      if (!practice) {
+        res.status(404).json({ error: '練習が見つかりません' });
+        return;
+      }
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      if (practice.status !== '開催' || practice.date < today) {
+        res.status(409).json({ error: '過去または中止された練習には回答できません' });
+        return;
+      }
       const record = await sheets.upsertAttendance({
-        practiceId, lineUserId, displayName, status,
+        practiceId, lineUserId, displayName, status: status as AttendanceStatus,
         carpool: carpool || undefined,
       });
       res.json(record);
