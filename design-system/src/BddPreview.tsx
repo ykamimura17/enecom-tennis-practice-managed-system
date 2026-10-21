@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import hero from './assets/tennis-image.png';
+import { Icon, Section, Choice } from './MobileRegistration';
 import './mobile.css';
 import './BddPreview.css';
 
@@ -40,9 +42,11 @@ const cloneAnswers = () => Object.fromEntries(Object.entries(baseAnswers).map(([
 const label = (a?: Answer) => a ? a.status === '参加' ? '参加・配車' + (a.carpool ?? '未選択') : a.status : '未回答';
 function Shell({ title, children }: {title:string;children:ReactNode}) {
   return <div className="tm-stage"><div className="tm-phone bdd-phone" lang="ja">
-    <header className="tm-header"><span className="bdd-back">‹</span><h1>{title}</h1><span className="tm-header-space"/></header>
-    <main className="tm-content bdd-content">{children}<p className="tm-demo-note">Storybookの操作確認用です。Google SheetsやLINEへ送信しません。</p></main>
-    <footer className="tm-bottom-nav"><span>ホーム</span><span>練習</span><strong>{title === '参加登録' ? '登録' : 'メンバー'}</strong><span>メンバー</span></footer>
+    <header className="tm-header"><button type="button" className="tm-back" aria-label="戻る（プレビュー）"><Icon name="back" size={28}/></button><h1>{title}</h1><span className="tm-header-space"/></header>
+    <main className="tm-content bdd-content">{children}<p className="tm-demo-note">Storybookプレビューです。実際の出欠データは更新しません。</p></main>
+    <footer className="tm-bottom-nav" aria-label="画面切り替え">
+      {([{label:'ホーム',icon:'home'},{label:'練習',icon:'calendar'},{label:'登録',icon:'clipboard'},{label:'メンバー',icon:'people'}] as const).map(item=><button type="button" key={item.label} className={(title==='参加登録'&&item.label==='登録')||(title==='メンバー'&&item.label==='メンバー')?'active':''} onClick={()=>{}}><Icon name={item.icon} size={23}/><span>{item.label}</span></button>)}
+    </footer>
   </div></div>;
 }
 function Counter({members}:{members:Member[]}) {
@@ -51,7 +55,7 @@ function Counter({members}:{members:Member[]}) {
 export function BddRegistration({initial='default'}:{initial?:'default'|'empty'|'error'|'save-error'|'past'|'cancelled'}) {
   const [answers,setAnswers] = useState<Record<string,Answer>>(cloneAnswers);
   const [opened,setOpened] = useState<string|null>(initial==='cancelled'?'c':null);
-  const [draft,setDraft] = useState<Answer | undefined>();
+  const [draft,setDraft] = useState<Answer | undefined>(initial==='cancelled'?baseAnswers.c:undefined);
   const [dirty,setDirty] = useState(false);
   const [pastOpen,setPastOpen] = useState(initial==='past');
   const [visiblePast,setVisiblePast] = useState(10);
@@ -85,32 +89,47 @@ export function BddRegistration({initial='default'}:{initial?:'default'|'empty'|
   const card = (p:Practice) => {
     const open=opened===p.id, readOnly=!!(p.cancelled||p.past);
     const current=answerFor(p.id);
-    return <article key={p.id} className={'tm-card bdd-practice '+(readOnly?'bdd-readonly':'')}>
-      <button type="button" className="bdd-card-toggle" aria-expanded={open} disabled={saving}
-        onClick={()=>requestOpen(open?null:p.id)}>
-        <span className="bdd-card-head"><strong>{p.title}</strong><span className={'bdd-pill '+(p.cancelled?'cancel':p.past?'old':'')}>{p.cancelled?'中止':p.past?'終了済み':'受付中'}</span></span>
-        <span className="bdd-muted">{p.when}</span><span className="bdd-muted">{p.location}</span>
-        <span className="bdd-card-foot"><span>自分の回答：{label(current)}</span><b>{open?'⌃':'⌄'}</b></span>
-      </button>
-      {open && <div className="bdd-detail">
-        {p.description&&<p className="bdd-muted">{p.description}</p>}
+    const heroStyle = {backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.91) 44%, rgba(255,255,255,.28) 100%), url('+hero+')'};
+    return <div key={p.id} className="bdd-entry">
+      <article className="tm-practice tm-card bdd-a-hero" style={heroStyle}>
+        <button type="button" className="bdd-a-toggle" aria-expanded={open} disabled={saving} onClick={()=>requestOpen(open?null:p.id)}>
+          <div className="tm-hero-status"><span className="tm-tennis-logo">◉</span><span className={'tm-accepting '+(p.cancelled?'bdd-cancelled':p.past?'bdd-ended':'')}>{p.cancelled?'中止':p.past?'終了済み':'受付中'}</span></div>
+          <h2>{p.when.split(' ')[0]} {p.title}</h2>
+          <div className="tm-hero-line"><Icon name="clock"/><span>{p.when.split(' ').slice(1).join(' ')}</span></div>
+          <div className="tm-hero-line"><Icon name="pin"/><span>{p.location}</span></div>
+          {p.description && <div className="tm-hero-line tm-hero-detail"><Icon name="note"/><span>{p.description}</span></div>}
+          <div className="bdd-a-status"><span>あなたの回答：<strong>{label(current)}</strong></span><span className="bdd-a-chevron">{open?'⌃':'⌄'}</span></div>
+        </button>
+      </article>
+      {open && <div className="bdd-a-form">
         {readOnly ? <>
-          <div className="bdd-view-row"><span>参加可否</span><strong>{current?.status??'未回答'}</strong></div>
-          {current?.status==='参加'&&<div className="bdd-view-row"><span>配車希望</span><strong>{current.carpool??'未選択'}</strong></div>}
-          {current?.comment&&<div><small>自分のコメント</small><p>{current.comment}</p></div>}
-          <p className="bdd-notice">🔒 {p.cancelled?'中止済み':'終了済み'}のため変更できません</p>
+          <section className="tm-section tm-card">
+            <div className="tm-section-heading"><Icon name="users" size={27}/><h2>保存済みの回答</h2></div>
+            <div className="bdd-view-row"><span>参加可否</span><strong>{current?.status??'未回答'}</strong></div>
+            {current?.status==='参加'&&<div className="bdd-view-row"><span>配車希望</span><strong>{current.carpool??'未選択'}</strong></div>}
+            {current?.comment&&<div className="bdd-view-comment"><span>自分のコメント</span><p>{current.comment}</p></div>}
+            <p className="bdd-notice">{p.cancelled?'中止済み':'終了済み'}のため変更できません</p>
+          </section>
         </> : <>
-          <div className="bdd-field"><strong>参加可否 <small>必須</small></strong>
-            <div className="bdd-options">{(['参加','不参加','未定'] as const).map(s=><button key={s} disabled={saving} type="button" aria-pressed={draft?.status===s} onClick={()=>change({status:s})}>{s}</button>)}</div>
-          </div>
-          {draft?.status==='参加'&&<div className="bdd-field"><strong>配車希望 <small>必須</small></strong><div className="bdd-options">{(['必要','不要'] as const).map(c=><button key={c} disabled={saving} type="button" aria-pressed={draft.carpool===c} onClick={()=>change({carpool:c})}>{c}</button>)}</div></div>}
-          <div className="bdd-field"><label htmlFor={'comment-'+p.id}><strong>コメント <small>任意</small></strong></label><textarea id={'comment-'+p.id} value={draft?.comment??''} disabled={saving} onChange={e=>change({comment:e.target.value})} placeholder="コメントがあれば入力してください"/></div>
+          <Section title="参加予定" icon="users" badge="必須">
+            <div className="tm-choice-group">
+              {(['参加','不参加','未定'] as const).map(s=><Choice key={s} label={s} checked={draft?.status===s} disabled={saving} onClick={()=>change({status:s})}/>)}
+            </div>
+          </Section>
+          {draft?.status==='参加'&&<Section title="配車の希望" icon="car" badge="必須">
+            <div className="tm-choice-group">
+              {(['必要','不要'] as const).map(cp=><Choice key={cp} label={cp==='必要'?'配車必要':'不要'} horizontal checked={draft.carpool===cp} disabled={saving} onClick={()=>change({carpool:cp})}/>)}
+            </div>
+            {!draft.carpool&&<p className="bdd-error">配車希望を選択してください。</p>}
+          </Section>}
+          <Section title="コメント" icon="message" badge="任意">
+            <div className="tm-textarea-wrap"><textarea maxLength={200} aria-label="コメント" placeholder="コメントがあれば入力してください。" value={draft?.comment??''} disabled={saving} onChange={e=>change({comment:e.target.value})}/><span>{draft?.comment.length??0} / 200</span></div>
+          </Section>
           {saveError&&<p className="bdd-error" role="alert">登録に失敗しました。もう一度お試しください。</p>}
-          {draft?.status==='参加'&&!draft.carpool&&<p className="bdd-error">配車希望を選択してください。</p>}
-          <button type="button" className="bdd-save" disabled={saving || (draft?.status==='参加'&&!draft.carpool)} onClick={save}>{saving?'登録中…':'登録'}</button>
+          <button type="button" className="tm-submit" disabled={saving || (draft?.status==='参加'&&!draft.carpool)} onClick={save}>{saving?'登録中…':'この内容で登録'}<span aria-hidden="true">›</span></button>
         </>}
       </div>}
-    </article>;
+    </div>;
   };
   return <Shell title="参加登録">
     {initial==='error'?<div className="tm-card bdd-state"><strong>練習情報を取得できませんでした</strong><p>別の画面に移動し、参加登録画面を開き直してください。</p></div>:<>
