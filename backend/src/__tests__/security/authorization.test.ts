@@ -15,6 +15,7 @@ const sheets = {
 } as unknown as SheetsService;
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => { res.locals.lineUserId = req.headers['x-line-user-id']; next(); });
 app.use('/api/practices', createPracticesRouter(sheets));
 app.use('/api/attendance', createAttendanceRouter(sheets));
 
