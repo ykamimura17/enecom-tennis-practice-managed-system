@@ -42,7 +42,7 @@ export function AdminPage({userInfo,onPracticeCreated}:{userInfo:UserInfo;onPrac
     return()=>{active=false};
   },[targetId,view]);
 
-  function open(viewName:AdminView){setView(viewName);setTargetId('');setNotice('');setError('');setPendingMessage(null);setAttendances([]);setShowCreate(viewName==='create');}
+  function open(viewName:AdminView){setView(viewName);setTargetId('');setNotice('');setError('');setPendingMessage(null);setAttendances([]);setShowCreate(false);}
   async function create(data:Omit<Practice,'id'|'createdAt'|'status'>){
     await api.createPractice(userInfo.userId,data);
     await load();onPracticeCreated?.();setNotice('練習を追加しました');setShowCreate(false);
