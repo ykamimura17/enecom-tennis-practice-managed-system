@@ -29,17 +29,17 @@ const iconPaths={
 };
 type IconName=keyof typeof iconPaths;
 function Icon({name,size=21}:{name:IconName;size?:number}){return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{iconPaths[name]}</svg>}
-function Nav({active,onChange}:{active:Page;onChange:(page:Page)=>void}){
+function Nav({active,onChange,isAdmin=true}:{active:Page;onChange:(page:Page)=>void;isAdmin?:boolean}){
  const links=([{page:'home',label:'ホーム',icon:'home'},{page:'practice',label:'練習',icon:'calendar'},{page:'members',label:'メンバー',icon:'users'},{page:'admin',label:'管理',icon:'check'}] as const);
- return <footer className="tm-bottom-nav" aria-label="画面切り替え">{links.map(l=><button key={l.page} type="button" className={active===l.page?'active':''} onClick={()=>onChange(l.page)}><Icon name={l.icon} size={23}/><span>{l.label}</span></button>)}</footer>;
+ return <footer className="tm-bottom-nav" aria-label="画面切り替え">{links.filter(l=>isAdmin||l.page!=='admin').map(l=><button key={l.page} type="button" className={active===l.page?'active':''} onClick={()=>onChange(l.page)}><Icon name={l.icon} size={23}/><span>{l.label}</span></button>)}</footer>;
 }
-export function HomeMembers({initialPage='home',initialFilter='全員',onNavigate}:{initialPage?:'home'|'members';initialFilter?:Filter;onNavigate?:(page:Page)=>void}){
+export function HomeMembers({initialPage='home',initialFilter='全員',onNavigate,isAdmin=true}:{initialPage?:'home'|'members';initialFilter?:Filter;onNavigate?:(page:Page)=>void;isAdmin?:boolean}){
  const [page,setPage]=useState<Page>(initialPage);
  const [filter,setFilter]=useState<Filter>(initialFilter);
  const [query,setQuery]=useState('');
  const [selected,setSelected]=useState<Member|null>(null);
  const visible=useMemo(()=>members.filter(m=>(filter==='全員'||(filter==='参加予定'?m.attendance==='参加':m.carpool))&&m.name.replaceAll(' ','').includes(query.replaceAll(' ',''))),[filter,query]);
- const go=(p:Page)=>{setSelected(null);if(onNavigate){onNavigate(p)}else{setPage(p)}};
+ const go=(p:Page)=>{if(p==='admin'&&!isAdmin)return;setSelected(null);if(onNavigate){onNavigate(p)}else{setPage(p)}};
  return <div className="tm-stage"><div className="tm-phone hm-phone" lang="ja">
   <header className="tm-header"><button className="tm-back" type="button" aria-label="ホームに戻る" onClick={()=>go('home')}><Icon name="back" size={26}/></button><h1>{selected?'メンバー詳細':page==='home'?'ホーム':page==='members'?'メンバー':'プレビュー'}</h1><span className="tm-header-space"/></header>
   {page==='home'?<main className="tm-content hm-content">
@@ -62,6 +62,6 @@ export function HomeMembers({initialPage='home',initialFilter='全員',onNavigat
     <p className="tm-demo-note">表示名・回答はデザイン確認用の架空データです。</p>
    </>}
   </main>:<main className="tm-content hm-content"><section className="tm-card hm-preview"><h2>{page==='practice'?'練習予定':'管理'}</h2><p>こちらの画面は別のStorybookストーリーで確認できます。</p><button type="button" onClick={()=>go('home')}>ホームに戻る</button></section></main>}
-  <Nav active={page} onChange={go}/>
+  <Nav active={page} onChange={go} isAdmin={isAdmin}/>
  </div></div>;
 }
