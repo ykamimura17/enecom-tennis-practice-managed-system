@@ -5,7 +5,7 @@ import { HomeMembers } from './HomeMembers';
 import './mobile.css';
 import './PracticeList.css';
 
-type Filter = 'すべて' | '受付中' | '参加予定';
+type Filter = 'すべて' | '参加予定';
 type Practice = { id: number; date: string; day: string; title: string; time: string; place: string; status: '受付中' | '終了' | '雨天中止' | '中止'; response: '参加' | '不参加' | '未回答'; detail: string; start: string; carpool?: '必要' | '不要'; comment?: string };
 const initialPractices: Practice[] = [
   { id: 1, start: '2026-10-26T10:00', date: '10/26', day: '土', title: '午前練習', time: '10:00 – 12:00', place: '市営テニスコート A/B', status: '受付中', response: '参加', detail: '基礎練習とゲーム練習を行います。' },
@@ -55,7 +55,7 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
  const now=new Date();const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
  const upcoming=sorted.filter(p=>p.start.slice(0,10)>=today);
  const past=sorted.filter(p=>p.start.slice(0,10)<today);
- const shown=upcoming.filter(p=>filter==='すべて'||(filter==='受付中'?p.status==='受付中':p.response==='参加'));
+ const shown=upcoming.filter(p=>filter==='すべて'||p.response==='参加');
  const isPast=(p:Practice)=>p.start.slice(0,10)<today;
  const openRegistration=(p:Practice)=>{setSelected(p);setAnswer(p.response);setCarpool(p.carpool);setComment(p.comment??'');setRegistering(true)};
  const backToList=()=>{setRegistering(false);setSelected(null);setTab('practice')};
@@ -126,7 +126,7 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
    <button className="pl-back-list" onClick={()=>setSelected(null)}>← 練習一覧へ戻る</button>
   </main>:<main className="tm-content pl-content">
    {historyOnly?<button className="pl-admin-return" type="button" onClick={()=>setHistoryOnly(false)}>← 今後の練習に戻る</button>:<div className="pl-intro"><span className="pl-eyebrow">TENNIS CLUB</span><h2>次の練習をチェック</h2><p>参加予定や練習の詳細を確認できます。</p></div>}
-   {!historyOnly&&<><div className="pl-filter" role="group" aria-label="練習予定の絞り込み">{(['すべて','受付中','参加予定'] as const).map(f=><button key={f} type="button" aria-pressed={filter===f} className={filter===f?'active':''} onClick={()=>setFilter(f)}>{f}</button>)}</div>
+   {!historyOnly&&<><div className="pl-filter" role="group" aria-label="練習予定の絞り込み">{(['すべて','参加予定'] as const).map(f=><button key={f} type="button" aria-pressed={filter===f} className={filter===f?'active':''} onClick={()=>setFilter(f)}>{f}</button>)}</div>
    <div className="pl-list-heading"><h3>今後の練習</h3><span>{shown.length}件</span></div>
    {shown.map((p,i)=><button className={'tm-card pl-item '+(i===0?'pl-item-featured':'')} key={p.id} type="button" onClick={()=>setSelected(p)}>
     {i===0&&<div className="pl-image" style={{backgroundImage:'url('+hero+')'}} aria-hidden="true"/>}
