@@ -42,7 +42,7 @@ export default function App(){
     let active=true;
     api.getAttendance(next.id).then(list=>{if(active)setNextAttendance(list)}).catch(()=>{if(active)setNextAttendance([])});
     return()=>{active=false};
-  },[next?.id]);
+  },[next?.id,tab]);
   function toggleNotifications(){
     if(!showNotifications){
       const updated=new Set([...seenIds,...practices.map(p=>p.id)]);
