@@ -17,6 +17,7 @@ const mockSheets = { getPractices, createPractice, updatePracticeStatus, init } 
 
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => { res.locals.lineUserId = req.headers['x-line-user-id']; next(); });
 app.use('/api/practices', createPracticesRouter(mockSheets));
 
 const samplePractice: Practice = {
