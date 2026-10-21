@@ -37,14 +37,13 @@ function Nav({active,onChange,isAdmin=true}:{active:Page;onChange:(page:Page)=>v
 export function HomeMembers({initialPage='home',initialFilter='全員',onNavigate,isAdmin=true,events=[]}:{initialPage?:'home'|'members';initialFilter?:Filter;onNavigate?:(page:Page)=>void;isAdmin?:boolean;events?:MemberEvent[]}){
  const [page,setPage]=useState<Page>(initialPage);
  const [filter,setFilter]=useState<Filter>(initialFilter);
- const [query,setQuery]=useState('');
  const [eventId,setEventId]=useState<number|null>(null);
  const selectedEvent=events.find(e=>e.id===eventId)??events[0];
  const eventIndex=Math.max(0,events.findIndex(e=>e.id===selectedEvent?.id));
  const eventMembers=useMemo(()=>members.map((m,i)=>{if(!selectedEvent||eventIndex===0)return m;const attendance=(['参加','不参加','未回答'] as const)[(i+eventIndex)%3];return {...m,attendance,carpool:attendance==='参加'&&(i+eventIndex)%2===0};}),[selectedEvent,eventIndex]);
  const participants=eventMembers.filter(m=>m.attendance==='参加').length;
  const [selected,setSelected]=useState<Member|null>(null);
- const visible=useMemo(()=>eventMembers.filter(m=>(filter==='全員'||(filter==='参加予定'?m.attendance==='参加':m.carpool))&&m.name.replaceAll(' ','').includes(query.replaceAll(' ',''))),[eventMembers,filter,query]);
+ const visible=useMemo(()=>eventMembers.filter(m=>(filter==='全員'||(filter==='参加予定'?m.attendance==='参加':m.carpool))),[eventMembers,filter]);
  const go=(p:Page)=>{if(p==='admin'&&!isAdmin)return;setSelected(null);if(onNavigate){onNavigate(p)}else{setPage(p)}};
  return <div className="tm-stage"><div className="tm-phone hm-phone" lang="ja">
   <header className="tm-header"><button className="tm-back" type="button" aria-label="ホームに戻る" onClick={()=>go('home')}><Icon name="back" size={26}/></button><h1>{selected?'メンバー詳細':page==='home'?'ホーム':page==='members'?'メンバー':'プレビュー'}</h1><span className="tm-header-space"/></header>
@@ -55,14 +54,12 @@ export function HomeMembers({initialPage='home',initialFilter='全員',onNavigat
    <div className="hm-counts"><div className="tm-card"><strong>3<span>人</span></strong><p>参加</p></div><div className="tm-card"><strong>1<span>人</span></strong><p>不参加</p></div><div className="tm-card"><strong>2<span>人</span></strong><p>未回答</p></div></div>
    <div className="hm-heading"><h3>クイックアクセス</h3></div>
    <div className="hm-shortcuts"><button type="button" className="tm-card" onClick={()=>go('practice')}><span className="hm-shortcut-icon"><Icon name="calendar" size={25}/></span><strong>練習予定</strong><small>今後の予定を見る</small><Icon name="arrow" size={18}/></button><button type="button" className="tm-card" onClick={()=>go('members')}><span className="hm-shortcut-icon"><Icon name="users" size={25}/></span><strong>メンバー</strong><small>出欠状況を確認</small><Icon name="arrow" size={18}/></button></div>
-   <section className="tm-card hm-notice"><span className="hm-shortcut-icon"><Icon name="bell"/></span><div><h3>お知らせ</h3><p>次回の練習の出欠を受付中です。</p></div></section>
    <p className="tm-demo-note">Storybook用の架空データです。実際の出欠情報は取得しません。</p>
   </main>:page==='members'?<main className="tm-content hm-content">
    {selected?<><div className="tm-card hm-profile"><div className="hm-avatar large" style={{background:selected.accent}}>{selected.initials}</div><h2>{selected.name}</h2><span className="hm-person-status">{selected.attendance}</span><p>対象イベント：{selectedEvent?.label??'10月26日 午前練習'}</p>{selected.carpool&&<p><Icon name="car"/> 配車希望あり</p>}</div><button type="button" className="hm-back-list" onClick={()=>setSelected(null)}>← メンバー一覧に戻る</button></>:
    <><div className="hm-greeting"><p className="hm-eyebrow">MEMBERS</p><h2>みんなの参加状況</h2><p>イベントを選択して回答状況を確認できます。</p></div>
     <label className="hm-event-picker"><span><Icon name="calendar" size={18}/> 対象イベント</span><select aria-label="出欠を表示するイベント" value={selectedEvent?.id??'default'} onChange={e=>{setEventId(Number(e.target.value));setSelected(null)}}>{events.length?events.map(e=><option key={e.id} value={e.id}>{e.label}{e.status==='雨天中止'||e.status==='中止'?'（中止）':''}</option>):<option value="default">10月26日 午前練習</option>}</select></label>
     <div className="tm-card hm-count-banner"><div><small>{selectedEvent?.label??'10月26日 午前練習'}</small><strong>参加 <em>{participants}</em> / {eventMembers.length}人</strong></div><div className="hm-progress"><span style={{width:(participants/eventMembers.length*100)+'%'}}/></div></div>
-    <label className="hm-search"><Icon name="search"/><input aria-label="メンバーを検索" placeholder="名前で検索" value={query} onChange={e=>setQuery(e.target.value)}/></label>
     <div className="hm-filter" role="group" aria-label="メンバー絞り込み">{(['全員','参加予定','配車希望'] as const).map(f=><button key={f} className={filter===f?'active':''} aria-pressed={filter===f} onClick={()=>setFilter(f)}>{f}</button>)}</div>
     <div className="hm-heading"><h3>メンバー一覧</h3><span>{visible.length}人</span></div>
     <div className="tm-card hm-members-list">{visible.map(m=><button type="button" key={m.id} onClick={()=>setSelected(m)} className="hm-member"><span className="hm-avatar" style={{background:m.accent}}>{m.initials}</span><span className="hm-member-name"><strong>{m.name}</strong>{m.carpool&&<small><Icon name="car" size={14}/> 配車希望あり</small>}</span><span className={'hm-person-status '+(m.attendance==='参加'?'going':m.attendance==='不参加'?'notgoing':'')}>{m.attendance}</span><Icon name="arrow" size={16}/></button>)}{visible.length===0&&<div className="hm-empty">該当するメンバーはいません。</div>}</div>
