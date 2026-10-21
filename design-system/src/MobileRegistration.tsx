@@ -41,7 +41,7 @@ export function MobileRegistration({ initialStatus = '未回答', initialCarpool
   const [carpool,setCarpool] = useState<CarpoolChoice>(initialCarpool);
   const [comment,setComment] = useState(initialComment);
   const [registered,setRegistered] = useState(saved);
-  const [tab,setTab] = useState<'home'|'practice'|'register'|'members'>('register');
+  const [tab,setTab] = useState<'home'|'practice'|'register'|'members'|'admin'>('register');
   return <div className="tm-stage"><div className="tm-phone" lang="ja">
     <header className="tm-header"><button type="button" className="tm-back" aria-label="戻る（プレビュー）" onClick={() => setTab('home')}><Icon name="back" size={28}/></button><h1>参加登録</h1><span className="tm-header-space"/></header>
     {tab === 'register' ? <main className="tm-content">
@@ -58,9 +58,9 @@ export function MobileRegistration({ initialStatus = '未回答', initialCarpool
       {registered && <div className="tm-success" role="status">✓ 回答を保存しました（プレビューのみ）</div>}
       <button className="tm-submit" onClick={()=>setRegistered(true)}>{registered ? '内容を変更して登録' : 'この内容で登録'} <span aria-hidden="true">›</span></button>
       <p className="tm-demo-note">Storybookプレビューです。実際の出欠データは更新しません。</p>
-    </main> : <main className="tm-content"><div className="tm-placeholder tm-card"><h2>{({home:'ホーム',practice:'練習',members:'メンバー'} as const)[tab]}</h2><p>この画面は今後のデザイン検討で追加します。</p><button onClick={()=>setTab('register')}>参加登録へ戻る</button></div></main>}
+    </main> : <main className="tm-content"><div className="tm-placeholder tm-card"><h2>{({home:'ホーム',practice:'練習',members:'メンバー',admin:'管理'} as const)[tab]}</h2><p>この画面は今後のデザイン検討で追加します。</p><button onClick={()=>setTab('register')}>参加登録へ戻る</button></div></main>}
     <footer className="tm-bottom-nav" aria-label="画面切り替え">
-      {([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'register',label:'登録',icon:'clipboard'},{key:'members',label:'メンバー',icon:'people'}] as const).map(item=><button key={item.key} type="button" className={tab===item.key ? 'active':''} onClick={()=>setTab(item.key)}><Icon name={item.icon} size={23}/><span>{item.label}</span></button>)}
+      {([{key:'home',label:'ホーム',icon:'home'},{key:'practice',label:'練習',icon:'calendar'},{key:'admin',label:'管理',icon:'clipboard'},{key:'members',label:'メンバー',icon:'people'}] as const).map(item=><button key={item.key} type="button" className={tab===item.key ? 'active':''} onClick={()=>setTab(item.key)}><Icon name={item.icon} size={23}/><span>{item.label}</span></button>)}
     </footer>
   </div></div>;
 }
