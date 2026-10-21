@@ -29,6 +29,10 @@ export class SheetsService {
   async init(): Promise<void> {
     await this.ensureSheet(PRACTICES_SHEET, PRACTICES_HEADERS);
     await this.ensureSheet(ATTENDANCE_SHEET, ATTENDANCE_HEADERS);
+    const metadata=await this.sheets.spreadsheets.get({spreadsheetId:this.spreadsheetId,fields:'sheets.properties.title'});
+    if(!(metadata.data.sheets??[]).some(sheet=>sheet.properties?.title===MEMBERS_SHEET)) {
+      await this.sheets.spreadsheets.batchUpdate({spreadsheetId:this.spreadsheetId,requestBody:{requests:[{addSheet:{properties:{title:MEMBERS_SHEET}}}]}});
+    }
     await this.ensureSheet(MEMBERS_SHEET, MEMBERS_HEADERS);
   }
 
