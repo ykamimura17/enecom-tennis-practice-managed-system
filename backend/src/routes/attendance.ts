@@ -19,8 +19,13 @@ export function createAttendanceRouter(sheets: SheetsService) {
   });
 
   router.post('/', async (req, res) => {
-    const { practiceId, lineUserId, displayName, status, carpool } = req.body;
-    if (!practiceId || !lineUserId || !displayName || !status) {
+    const { practiceId, displayName, status, carpool } = req.body;
+    const lineUserId = res.locals.lineUserId as string;
+    if (req.body.lineUserId && req.body.lineUserId !== lineUserId) {
+      res.status(403).json({ error: '他人の出欠は変更できません' });
+      return;
+    }
+    if (!practiceId || !displayName || !status) {
       res.status(400).json({ error: '全フィールドが必須です' });
       return;
     }
