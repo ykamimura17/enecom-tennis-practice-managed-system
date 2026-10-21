@@ -93,7 +93,7 @@ export function PracticeList({ initialFilter = 'すべて', initialPage = 'pract
     <p className="tm-demo-note">Storybookプレビューです。実際の出欠データは更新しません。</p>
   </main>:tab==='admin'&&isAdmin?<main className="tm-content pl-content">
     {adminView==='hub'?<>
-      <div className="pl-intro"><span className="pl-eyebrow">MANAGEMENT</span><h2>管理メニュー</h2><p>操作したい機能を選択してください。</p></div>
+      <div className="pl-intro" style={{backgroundImage:`linear-gradient(90deg,rgba(255,255,255,.97),rgba(255,255,255,.87) 55%,rgba(255,255,255,.3)),url(${hero})`,backgroundSize:"cover",backgroundPosition:"center",borderRadius:16,padding:16}}><span className="pl-eyebrow">MANAGEMENT</span><h2>管理メニュー</h2><p>操作したい機能を選択してください。</p></div>
       <div className="pl-admin-hub">
         {([{view:'create',icon:'calendar',title:'練習を追加',desc:'新しい練習予定を登録'},{view:'edit',icon:'settings',title:'練習を編集',desc:'日時・場所・内容を変更'},{view:'cancel',icon:'check',title:'中止・中止解除',desc:'中止理由の設定と再開'},{view:'attendance',icon:'users',title:'来場実績を記録',desc:'参加者の来場状況をチェック'},{view:'announce',icon:'chevron',title:'LINEで通知',desc:'練習案内をLINEに送信'}] as const).map(item=><button type="button" className="tm-card pl-admin-menu-card" key={item.view} onClick={()=>openAdmin(item.view)}><span className="pl-admin-menu-icon"><Glyph name={item.icon}/></span><span className="pl-admin-menu-copy"><strong>{item.title}</strong><small>{item.desc}</small></span><Glyph name="chevron"/></button>)}
       </div>
