@@ -35,3 +35,27 @@
 .pl-announcement-actions{display:flex;flex-direction:column;gap:7px;margin-top:14px}
 .pl-announcement-actions .pl-primary{border-radius:12px;padding:13px;font-size:13px}
 .pl-announcement-cancel{border:0;background:transparent;color:#647b70;font-size:12px;font-weight:700;padding:10px;cursor:pointer}
+
+.pl-admin-hub{display:grid;gap:12px;margin:16px 0}
+.pl-admin-menu-card{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border:1px solid #dce9df;border-radius:14px;background:white;text-align:left}
+.pl-admin-menu-icon{padding:12px;border-radius:12px;background:#eaf5ee;color:#267c50}
+.pl-admin-menu-copy{flex:1;display:grid;gap:5px}
+.pl-admin-menu-copy small{color:#72878a}
+.pl-admin-return{border:0;background:transparent;color:#267c50;padding:12px 0}
+.pl-admin-selector{display:grid;gap:10px}
+.pl-admin-select-item{display:flex;justify-content:space-between;gap:12px;width:100%;padding:14px;border:1px solid #e2ebe5;border-radius:12px;background:white;text-align:left}
+.pl-admin-select-item.is-selected{border-color:#267c50;background:#f1f9f3}
+.pl-admin-select-item>span:first-child{display:grid;gap:5px}
+.pl-admin-select-item small{color:#73878b}
+.pl-admin-select-status{font-size:11px;color:#267c50}
+.pl-admin-action-panel{padding:16px;margin:16px 0}
+.pl-admin-reason{display:grid;gap:8px;margin:14px 0}
+.pl-admin-reason select{padding:12px;border:1px solid #dce9df;border-radius:9px}
+.pl-admin-danger{width:100%;border:0;border-radius:10px;padding:13px;background:#b34c4c;color:white}
+.pl-admin-attendance-count{padding:12px;background:#eaf5ee;color:#267c50;border-radius:10px}
+.pl-admin-attendance-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #e5ece7}
+.pl-admin-attendance-row>span:first-child{display:grid;gap:4px}
+.pl-admin-attendance-row small{color:#71858a}
+.pl-admin-actual-control{display:flex;gap:6px;align-items:center}
+.pl-admin-actual-control input{accent-color:#267c50}
+.pl-admin-send{margin-top:15px}
