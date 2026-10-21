@@ -1,3 +1,4 @@
+import hero from '../../../design-system/src/assets/tennis-image.png';
 import { useCallback, useEffect, useState } from 'react';
 import liff from '@line/liff';
 import { api } from '../api/client';
@@ -85,11 +86,11 @@ export function AdminPage({userInfo,onPracticeCreated}:{userInfo:UserInfo;onPrac
 
   return <section className="a-admin-page">
     {view==='hub'?<>
-      <div className="a-admin-intro"><span>MANAGEMENT</span><h2>管理メニュー</h2><p>操作したい機能を選択してください。</p></div>
+      <div className="a-admin-intro" style={{backgroundImage:`linear-gradient(90deg,rgba(255,255,255,.97),rgba(255,255,255,.86) 55%,rgba(255,255,255,.25)),url(${hero})`,backgroundSize:"cover",backgroundPosition:"center"}}><span>MANAGEMENT</span><h2>管理メニュー</h2><p>操作したい機能を選択してください。</p></div>
       <div className="a-admin-menu">{entries.map(item=><button type="button" key={item.view} onClick={()=>open(item.view)}><span className="a-admin-icon">{item.icon}</span><span><strong>{item.title}</strong><small>{item.description}</small></span><em>›</em></button>)}</div>
     </>:<>
       <button type="button" className="a-admin-back" onClick={()=>open('hub')}>← 管理メニューに戻る</button>
-      <div className="a-admin-intro"><span>MANAGEMENT</span><h2>{entries.find(item=>item.view===view)?.title}</h2><p>対象の練習を選んで操作してください。</p></div>
+      <div className="a-admin-intro" style={{backgroundImage:`linear-gradient(90deg,rgba(255,255,255,.97),rgba(255,255,255,.86) 55%,rgba(255,255,255,.25)),url(${hero})`,backgroundSize:"cover",backgroundPosition:"center"}}><span>MANAGEMENT</span><h2>{entries.find(item=>item.view===view)?.title}</h2><p>対象の練習を選んで操作してください。</p></div>
       {view!=='create'&&<label className="a-admin-selector">対象の練習
         <select aria-label="操作する練習" value={targetId} onChange={e=>{setTargetId(e.target.value);setError('');setNotice('');setPendingMessage(null)}}>
           <option value="">練習を選択してください</option>
