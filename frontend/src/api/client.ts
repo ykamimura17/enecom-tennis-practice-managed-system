@@ -18,8 +18,6 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({})) as { error?: string };
-    if (res.status === 401) throw new Error('LINEの認証期限が切れました。アプリを開き直してください');
-    if (res.status === 403) throw new Error('この操作を行う権限がありません');
     throw new Error(body.error ?? `HTTP ${res.status}`);
   }
   return res.json() as Promise<T>;
@@ -38,6 +36,16 @@ export const api = {
   getPractices(): Promise<Practice[]> {
     if (IS_MOCK) return Promise.resolve([...mockPractices].sort((a, b) => a.date.localeCompare(b.date)));
     return request('/api/practices');
+  },
+
+  registerMember(displayName:string):Promise<{lineUserId:string;displayName:string}> {
+    if(IS_MOCK)return Promise.resolve({lineUserId:MOCK_USER.userId,displayName});
+    return request('/api/members/me',{method:'PUT',body:JSON.stringify({displayName})});
+  },
+
+  getPracticeRoster(practiceId:string):Promise<Attendance[]> {
+    if(IS_MOCK)return this.getAttendance(practiceId);
+    return request(`/api/attendance/${encodeURIComponent(practiceId)}/roster`);
   },
 
   getAttendance(practiceId: string): Promise<Attendance[]> {
