@@ -7,8 +7,10 @@ import type { Attendance } from '../../types';
 
 const getAttendance    = vi.fn();
 const upsertAttendance = vi.fn();
+const getPracticeRoster = vi.fn();
+const getPractices = vi.fn();
 
-const mockSheets = { getAttendance, upsertAttendance } as unknown as SheetsService;
+const mockSheets = { getAttendance, upsertAttendance, getPracticeRoster, getPractices } as unknown as SheetsService;
 
 const app = express();
 app.use(express.json());
@@ -59,6 +61,20 @@ describe('GET /api/attendance/:practiceId', () => {
     const res = await request(app).get('/api/attendance/p-001');
     expect(res.status).toBe(500);
     expect(res.body.error).toBeDefined();
+  });
+});
+
+describe('GET /api/attendance/:practiceId/roster', () => {
+  it('名簿に含まれる未回答者も取得できる', async () => {
+    getPractices.mockResolvedValue([{id:'p-001'}]);
+    getPracticeRoster.mockResolvedValue([{id:'unanswered:p-001:U2',practiceId:'p-001',lineUserId:'U2',displayName:'未回答者',status:'未回答',updatedAt:''}]);
+    const res=await request(app).get('/api/attendance/p-001/roster');
+    expect(res.status).toBe(200);
+    expect(res.body[0].status).toBe('未回答');
+  });
+  it('存在しない練習は404', async () => {
+    getPractices.mockResolvedValue([]);
+    expect((await request(app).get('/api/attendance/unknown/roster')).status).toBe(404);
   });
 });
 
