@@ -27,14 +27,14 @@ const icons = {
   clipboard: <><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 3h6v3H9Zm0 12 2 2 4-5"/></>,
 };
 type IconName = keyof typeof icons;
-function Icon({ name, size = 23 }: { name: IconName; size?: number }) {
+export function Icon({ name, size = 23 }: { name: IconName; size?: number }) {
   return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{icons[name]}</svg>;
 }
-function Section({ title, badge, icon, children }: { title: string; badge: '必須' | '任意'; icon: IconName; children: ReactNode }) {
+export function Section({ title, badge, icon, children }: { title: string; badge: '必須' | '任意'; icon: IconName; children: ReactNode }) {
   return <section className="tm-section tm-card"><div className="tm-section-heading"><Icon name={icon} size={27}/><h2>{title}</h2><span className={'tm-badge '+(badge === '必須' ? 'required' : 'optional')}>{badge}</span></div>{children}</section>;
 }
-function Choice({ label, checked, onClick, horizontal = false }: { label: string; checked: boolean; onClick: () => void; horizontal?: boolean }) {
-  return <button type="button" aria-pressed={checked} onClick={onClick} className={'tm-choice '+(checked ? 'selected' : '')+(horizontal ? ' horizontal' : '')}><span className="tm-radio">{checked ? <Icon name="check" size={21}/> : null}</span><span>{label}</span></button>;
+export function Choice({ label, checked, onClick, horizontal = false, disabled = false }: { label: string; checked: boolean; onClick: () => void; horizontal?: boolean; disabled?: boolean }) {
+  return <button type="button" aria-pressed={checked} onClick={onClick} disabled={disabled} className={'tm-choice '+(checked ? 'selected' : '')+(horizontal ? ' horizontal' : '')}><span className="tm-radio">{checked ? <Icon name="check" size={21}/> : null}</span><span>{label}</span></button>;
 }
 export function MobileRegistration({ initialStatus = '未回答', initialCarpool = '不要', initialComment = '', saved = false }: MobileRegistrationProps) {
   const [status,setStatus] = useState<AttendanceChoice>(initialStatus);
