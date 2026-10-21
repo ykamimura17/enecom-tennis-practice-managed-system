@@ -10,7 +10,6 @@ export function MembersAttendancePage() {
   const [practiceId, setPracticeId] = useState('');
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [filter, setFilter] = useState<Filter>('全員');
-  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -58,14 +57,13 @@ export function MembersAttendancePage() {
     carpool: attendances.filter(a => a.status === '参加' && a.carpool === '必要').length,
   }), [attendances]);
   const visible = attendances.filter(a => (
-    (filter === '全員' || (filter === '参加予定' ? a.status === '参加' : a.status === '参加' && a.carpool === '必要')) &&
-    a.displayName.replace(/ /g, '').includes(query.replace(/ /g, ''))
+    (filter === '全員' || (filter === '参加予定' ? a.status === '参加' : a.status === '参加' && a.carpool === '必要'))
   ));
 
   return <section className="live-members">
     <div className="live-members-intro"><span>MEMBERS</span><h2>みんなの参加状況</h2><p>イベントを選んで出欠状況を確認できます。</p></div>
     <label className="live-members-selector"><span>対象イベント</span>
-      <select value={practiceId} onChange={e => { setPracticeId(e.target.value); setQuery(''); setFilter('全員'); }} disabled={!practices.length} aria-label="出欠を表示するイベント">
+      <select value={practiceId} onChange={e => { setPracticeId(e.target.value); setFilter('全員'); }} disabled={!practices.length} aria-label="出欠を表示するイベント">
         {!practices.length && <option value="">練習がありません</option>}
         {practices.map(p => <option key={p.id} value={p.id}>{p.date.replace(/-/g, '/')} {p.title}{p.status !== '開催' ? '（' + p.status + '）' : ''}</option>)}
       </select>
@@ -75,7 +73,6 @@ export function MembersAttendancePage() {
     {loading ? <p className="live-members-empty">読み込み中...</p> : <>
       <div className="live-members-counts"><div><strong>{counts.attending}</strong><span>参加</span></div><div><strong>{counts.absent}</strong><span>不参加</span></div><div><strong>{counts.unanswered}</strong><span>未回答</span></div></div>
       <p className="live-members-note">名簿・出欠登録済みメンバー：{attendances.length}人 · 配車希望：{counts.carpool}人</p>
-      <label className="live-members-search"><span>名前で検索</span><input value={query} onChange={e => setQuery(e.target.value)} placeholder="メンバー名" /></label>
       <div className="live-members-filters" role="group" aria-label="出欠状況で絞り込み">{(['全員', '参加予定', '配車希望'] as const).map(f => <button key={f} type="button" className={filter === f ? 'active' : ''} aria-pressed={filter === f} onClick={() => setFilter(f)}>{f}</button>)}</div>
       <div className="live-members-heading"><h3>メンバー一覧</h3><span>{visible.length}人</span></div>
       <div className="live-members-list">{visible.map(a => <div className="live-members-person" key={a.id}><div className="live-members-avatar">{a.displayName.slice(0, 1)}</div><div className="live-members-name"><strong>{a.displayName}</strong>{a.status === '参加' && a.carpool && <small>配車：{a.carpool}</small>}{a.actual && <small>来場済み</small>}</div><span className={'live-members-status ' + (a.status === '参加' ? 'going' : a.status === '不参加' ? 'absent' : '')}>{a.status}</span></div>)}
