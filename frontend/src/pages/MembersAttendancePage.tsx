@@ -75,7 +75,7 @@ export function MembersAttendancePage() {
       <p className="live-members-note">名簿・出欠登録済みメンバー：{attendances.length}人 · 配車希望：{counts.carpool}人</p>
       <div className="live-members-filters" role="group" aria-label="出欠状況で絞り込み">{(['全員', '参加予定', '配車希望'] as const).map(f => <button key={f} type="button" className={filter === f ? 'active' : ''} aria-pressed={filter === f} onClick={() => setFilter(f)}>{f}</button>)}</div>
       <div className="live-members-heading"><h3>メンバー一覧</h3><span>{visible.length}人</span></div>
-      <div className="live-members-list">{visible.map(a => <div className="live-members-person" key={a.id}><div className="live-members-avatar">{a.displayName.slice(0, 1)}</div><div className="live-members-name"><strong>{a.displayName}</strong>{a.status === '参加' && a.carpool && <small>配車：{a.carpool}</small>}{a.actual && <small>来場済み</small>}</div><span className={'live-members-status ' + (a.status === '参加' ? 'going' : a.status === '不参加' ? 'absent' : '')}>{a.status}</span></div>)}
+      <div className="live-members-list">{visible.map(a => <div className="live-members-person" key={a.id}><div className="live-members-avatar">{a.displayName.slice(0, 1)}</div><div className="live-members-name"><strong>{a.displayName}</strong>{a.status === '参加' && a.carpool && <small>配車：{a.carpool}</small>}</div><span className={'live-members-status ' + (a.status === '参加' ? 'going' : a.status === '不参加' ? 'absent' : '')}>{a.status}</span></div>)}
         {visible.length === 0 && <p className="live-members-empty">該当する回答はありません</p>}
       </div>
       <p className="live-members-note">未回答にはメンバー名簿に登録済みで、まだ回答していない人も含みます。</p>

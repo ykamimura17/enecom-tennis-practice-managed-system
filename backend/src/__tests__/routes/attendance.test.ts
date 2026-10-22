@@ -36,6 +36,7 @@ const validPostBody = {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  process.env.ADMIN_LINE_USER_IDS = 'Uadmin0001';
   getPractices.mockResolvedValue([{ id: 'p-001', date: '2099-01-01', status: '開催' }]);
 });
 
@@ -49,6 +50,20 @@ describe('GET /api/attendance/:practiceId', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([sampleAttendance]);
     expect(getAttendance).toHaveBeenCalledWith('p-001');
+  });
+
+  it('一般ユーザーには来場実績を返さない', async () => {
+    getAttendance.mockResolvedValue([{ ...sampleAttendance, actual: true }]);
+    const res = await request(app).get('/api/attendance/p-001');
+    expect(res.status).toBe(200);
+    expect(res.body[0]).not.toHaveProperty('actual');
+  });
+
+  it('管理者には来場実績を返す', async () => {
+    getAttendance.mockResolvedValue([{ ...sampleAttendance, actual: true }]);
+    const res = await request(app).get('/api/attendance/p-001').set('x-line-user-id', 'Uadmin0001');
+    expect(res.status).toBe(200);
+    expect(res.body[0].actual).toBe(true);
   });
 
   it('該当練習の出欠がない場合は空配列を返す', async () => {
@@ -73,6 +88,17 @@ describe('GET /api/attendance/:practiceId/roster', () => {
     expect(res.status).toBe(200);
     expect(res.body[0].status).toBe('未回答');
   });
+  it('名簿APIでも一般ユーザーには来場実績を返さない', async () => {
+    getPracticeRoster.mockResolvedValue([{ ...sampleAttendance, actual: true }]);
+    const res = await request(app).get('/api/attendance/p-001/roster');
+    expect(res.status).toBe(200);
+    expect(res.body[0]).not.toHaveProperty('actual');
+  });
+  it('名簿APIでは管理者に来場実績を返す', async () => {
+    getPracticeRoster.mockResolvedValue([{ ...sampleAttendance, actual: true }]);
+    const res = await request(app).get('/api/attendance/p-001/roster').set('x-line-user-id', 'Uadmin0001');
+    expect(res.body[0].actual).toBe(true);
+  });
   it('存在しない練習は404', async () => {
     getPractices.mockResolvedValue([]);
     expect((await request(app).get('/api/attendance/unknown/roster')).status).toBe(404);
@@ -89,6 +115,13 @@ describe('POST /api/attendance', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual(sampleAttendance);
     expect(upsertAttendance).toHaveBeenCalledOnce();
+  });
+
+  it('一般ユーザーの登録応答にも来場実績を含めない', async () => {
+    upsertAttendance.mockResolvedValue({ ...sampleAttendance, actual: true });
+    const res = await request(app).post('/api/attendance').send(validPostBody);
+    expect(res.status).toBe(200);
+    expect(res.body).not.toHaveProperty('actual');
   });
 
   it('不参加を登録できる（200）', async () => {
