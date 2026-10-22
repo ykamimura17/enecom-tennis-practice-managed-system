@@ -39,12 +39,12 @@ export function buildAnnounceMessage(practice: Practice, liffId: string): Record
       footer: {
         type: 'box',
         layout: 'vertical',
-        contents: [{
-          type: 'button',
-          style: 'primary',
-          color: '#06C755',
-          action: { type: 'uri', label: '参加・不参加を登録する', uri: liffUrl },
-        }],
+        spacing: 'sm', contents: [
+          { type: 'button', style: 'primary', color: '#06C755', action: { type: 'postback', label: '参加', data: `attendance:${practice.id}:attend`, displayText: '参加' } },
+          { type: 'button', style: 'secondary', action: { type: 'postback', label: '参加（配車あり）', data: `attendance:${practice.id}:carpool`, displayText: '参加（配車あり）' } },
+          { type: 'button', style: 'secondary', action: { type: 'postback', label: '不参加', data: `attendance:${practice.id}:absent`, displayText: '不参加' } },
+          { type: 'button', style: 'link', action: { type: 'uri', label: 'Webアプリで確認・変更', uri: liffUrl } },
+        ],
       },
     },
   };
