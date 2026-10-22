@@ -3,7 +3,6 @@ import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 import express from 'express';
-import { createLineWebhookRouter } from './routes/lineWebhook';
 import cors from 'cors';
 import { SheetsService } from './services/sheets';
 import { isAdmin, requireAuth } from './middleware/adminAuth';
@@ -13,7 +12,6 @@ import { createAttendanceRouter } from './routes/attendance';
 const app = express();
 
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
-app.use('/api/line/webhook', express.raw({ type: 'application/json' }), createLineWebhookRouter(new SheetsService()));
 app.use(express.json());
 
 const sheets = new SheetsService();
