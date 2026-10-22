@@ -1,4 +1,4 @@
-import hero from '../../../design-system/src/assets/tennis-image.png';
+import hero from '../assets/tennis-image.png';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import type { Attendance, Practice } from '../types';
