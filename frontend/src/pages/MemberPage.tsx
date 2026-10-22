@@ -1,3 +1,4 @@
+import hero from '../../../design-system/src/assets/tennis-image.png';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import type { Attendance, AttendanceStatus, CarpoolStatus, Practice, UserInfo } from '../types';
@@ -70,13 +71,13 @@ export function MemberPage({userInfo,onSaved}:{userInfo:UserInfo;onSaved?:()=>vo
   const renderCard=(p:Practice)=> {
     const status=attendances[p.id]?.status??'未回答';
     const finished=p.date<today;
-    return <button type="button" key={p.id} className="a-practice-card" onClick={()=>openPractice(p)}>
+    return <button type="button" key={p.id} className="a-practice-card" style={{backgroundImage:`linear-gradient(90deg,rgba(255,255,255,.98),rgba(255,255,255,.89) 49%,rgba(255,255,255,.23)),url(${hero})`,backgroundSize:"cover",backgroundPosition:"center"}} onClick={()=>openPractice(p)}>
       <div className="a-practice-card-top"><span className={'a-chip '+(p.status!=='開催'||finished?'muted':'')}>{p.status!=='開催'?p.status:finished?'終了':'受付中'}</span><span className={'a-chip response '+(status==='参加'?'going':status==='不参加'?'absent':'')}>{status}</span></div>
       <div className="a-practice-card-main"><span className={'a-practice-date '+(finished?'past':'')}><strong>{p.date.slice(5).replace('-','/')}</strong><small>{WEEKDAYS[new Date(p.date+'T00:00:00').getDay()]}曜日</small></span><span className="a-practice-copy"><strong>{p.title}</strong><small>◷ {p.time}{p.endTime?' – '+p.endTime:''}</small><small>⌖ {p.location}</small></span><span className="a-chevron">›</span></div>
     </button>;
   };
   return <div className="a-practice-page">
-    {selected?<><button className="a-back" type="button" onClick={()=>setSelectedId(null)}>← 練習一覧に戻る</button><div className="a-practice-hero"><span className={'a-chip '+(readOnly?'muted':'')}>{selected.status!=='開催'?selected.status:readOnly?'終了':'受付中'}</span><h2>{formatDate(selected.date)} {selected.title}</h2><p>◷ {selected.time}{selected.endTime?' – '+selected.endTime:''}</p><p>⌖ {selected.location}</p>{selected.description&&<p>{selected.description}</p>}</div>
+    {selected?<><button className="a-back" type="button" onClick={()=>setSelectedId(null)}>← 練習一覧に戻る</button><div className="a-practice-hero" style={{backgroundImage:`linear-gradient(90deg,rgba(255,255,255,.98),rgba(255,255,255,.89) 49%,rgba(255,255,255,.23)),url(${hero})`}}><span className={'a-chip '+(readOnly?'muted':'')}>{selected.status!=='開催'?selected.status:readOnly?'終了':'受付中'}</span><h2>{formatDate(selected.date)} {selected.title}</h2><p>◷ {selected.time}{selected.endTime?' – '+selected.endTime:''}</p><p>⌖ {selected.location}</p>{selected.description&&<p>{selected.description}</p>}</div>
       <div className="a-practice-detail"><h3>あなたの回答</h3>{readOnly?<><span className="a-chip response">{attendances[selected.id]?.status??'未回答'}</span>{attendances[selected.id]?.carpool&&<p>配車：{attendances[selected.id].carpool}</p>}<p className="a-muted-text">過去・中止済みの練習は閲覧専用です。</p></>:<>
         <fieldset className="a-choice-set"><legend>参加予定</legend>{(['参加','不参加','未回答'] as const).map(s=><label key={s} className={'a-choice '+(answer===s?'selected':'')}><input type="radio" name="attendance" checked={answer===s} onChange={()=>{setAnswer(s);if(s!=='参加')setCarpool(undefined)}}/>{s==='未回答'?'未定':s}</label>)}</fieldset>
         {answer==='参加'&&<fieldset className="a-choice-set"><legend>配車の希望</legend>{(['必要','不要'] as const).map(v=><label key={v} className={'a-choice '+(carpool===v?'selected':'')}><input type="radio" name="carpool" checked={carpool===v} onChange={()=>setCarpool(v)}/>{v==='必要'?'配車必要':'不要'}</label>)}</fieldset>}
