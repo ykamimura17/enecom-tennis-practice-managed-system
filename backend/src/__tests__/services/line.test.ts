@@ -38,8 +38,24 @@ describe('buildAnnounceMessage', () => {
     const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const footer = (msg.contents as any).footer;
-    const uri = footer.contents[0].action.uri as string;
+    const uri = footer.contents[3].action.uri as string;
     expect(uri).toBe('https://liff.line.me/liff-id-123?practiceId=p-001');
+  });
+
+  it('3つの出欠ボタンがpostbackで練習IDを渡す', () => {
+    const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
+    const footer = (msg.contents as any).footer;
+    expect(footer.contents.slice(0, 3).map((b: any) => b.action.data)).toEqual([
+      'attendance:p-001:attend', 'attendance:p-001:carpool', 'attendance:p-001:absent',
+    ]);
+  });
+
+  it('postbackボタンが3つある', () => {
+    const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
+    const footer = (msg.contents as any).footer;
+    expect(footer.contents.slice(0, 3).map((button: any) => button.action.data)).toEqual([
+      'attendance:p-001:attend', 'attendance:p-001:carpool', 'attendance:p-001:absent',
+    ]);
   });
 
   it('contents に bubble / header / body / footer が存在する', () => {
