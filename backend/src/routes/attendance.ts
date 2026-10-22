@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { SheetsService } from '../services/sheets';
 import { AttendanceStatus, CarpoolStatus } from '../types';
-import { requireAdmin } from '../middleware/adminAuth';
+import { isAdmin, requireAdmin } from '../middleware/adminAuth';
+
+// 来場実績は検証済みLINEユーザーIDを持つ管理者にのみ公開する。
+function redactActual<T extends { actual?: boolean }>(records: T[], userId?: string): Omit<T, 'actual'>[] | T[] {
+  return userId && isAdmin(userId) ? records : records.map(({ actual: _actual, ...record }) => record);
+}
 
 const VALID_STATUSES: AttendanceStatus[] = ['参加', '不参加', '未回答'];
 const VALID_CARPOOLS: CarpoolStatus[] = ['必要', '不要'];
@@ -13,14 +18,14 @@ export function createAttendanceRouter(sheets: SheetsService) {
     try {
       const practices = await sheets.getPractices();
       if (!practices.some(p => p.id === req.params.practiceId)) {res.status(404).json({error:'練習が見つかりません'});return;}
-      res.json(await sheets.getPracticeRoster(req.params.practiceId));
+      res.json(redactActual(await sheets.getPracticeRoster(req.params.practiceId), res.locals.lineUserId));
     } catch {res.status(500).json({error:'サーバーエラーが発生しました'});}
   });
 
   router.get('/:practiceId', async (req, res) => {
     try {
       const attendances = await sheets.getAttendance(req.params.practiceId);
-      res.json(attendances);
+      res.json(redactActual(attendances, res.locals.lineUserId));
     } catch {
       res.status(500).json({ error: 'サーバーエラーが発生しました' });
     }
@@ -65,7 +70,7 @@ export function createAttendanceRouter(sheets: SheetsService) {
         practiceId, lineUserId, displayName, status: status as AttendanceStatus,
         carpool: carpool || undefined,
       });
-      res.json(record);
+      res.json(redactActual([record], res.locals.lineUserId)[0]);
     } catch {
       res.status(500).json({ error: 'サーバーエラーが発生しました' });
     }
