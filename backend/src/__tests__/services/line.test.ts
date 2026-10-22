@@ -50,6 +50,14 @@ describe('buildAnnounceMessage', () => {
     ]);
   });
 
+  it('postbackボタンが3つある', () => {
+    const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
+    const footer = (msg.contents as any).footer;
+    expect(footer.contents.slice(0, 3).map((button: any) => button.action.data)).toEqual([
+      'attendance:p-001:attend', 'attendance:p-001:carpool', 'attendance:p-001:absent',
+    ]);
+  });
+
   it('contents に bubble / header / body / footer が存在する', () => {
     const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
