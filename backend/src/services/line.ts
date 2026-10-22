@@ -50,8 +50,7 @@ export function buildAnnounceMessage(practice: Practice, liffId: string): Record
           paddingAll: '16px',
           contents: [{
             type: 'button',
-            style: 'primary',
-            color: '#F5F5F5',
+            style: 'secondary',
             height: 'md',
             action: { type: 'uri', label: '参加・不参加を登録', uri: liffUrl },
           }],
