@@ -1,4 +1,3 @@
-import hero from '../assets/tennis-image.png';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import type { Attendance, Practice } from '../types';
@@ -69,7 +68,7 @@ export function MembersAttendancePage() {
         {practices.map(p => <option key={p.id} value={p.id}>{p.date.replace(/-/g, '/')} {p.title}{p.status !== '開催' ? '（' + p.status + '）' : ''}</option>)}
       </select>
     </label>
-    {selectedPractice && <div className="live-members-event" style={{backgroundImage:`linear-gradient(90deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.75) 45%,rgba(255,255,255,.10) 100%),url(${hero})`,backgroundSize:"cover",backgroundPosition:"center"}}><strong>{selectedPractice.title}</strong><span>{selectedPractice.date.replace(/-/g, '/')} · {selectedPractice.time} · {selectedPractice.location}</span></div>}
+    {selectedPractice && <div className="live-members-event"><strong>{selectedPractice.title}</strong><span>{selectedPractice.date.replace(/-/g, '/')} · {selectedPractice.time} · {selectedPractice.location}</span></div>}
     {error && <p role="alert" className="live-members-error">{error}</p>}
     {loading ? <p className="live-members-empty">読み込み中...</p> : <>
       <div className="live-members-counts"><div><strong>{counts.attending}</strong><span>参加</span></div><div><strong>{counts.absent}</strong><span>不参加</span></div><div><strong>{counts.unanswered}</strong><span>未回答</span></div></div>
