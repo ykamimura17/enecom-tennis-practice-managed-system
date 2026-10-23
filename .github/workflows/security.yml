@@ -2,10 +2,10 @@ name: Security
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, main, dev]
     types: [opened, synchronize, reopened, ready_for_review]
   push:
-    branches: [master]
+    branches: [master, main, dev]
   workflow_dispatch:
 
 permissions:
