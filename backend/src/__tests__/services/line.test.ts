@@ -59,24 +59,33 @@ describe('buildAnnounceMessage', () => {
   it('日付とイベント情報が指定の順番で表示される', () => {
     const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
     const bubble = (msg.contents as any).contents[0];
-    expect(bubble.header.contents.map((item: any) => item.text)).toEqual(['🎾 練習案内', '6/15（土）']);
+    expect(bubble.header.contents.map((item: any) => item.text)).toEqual(['練習案内', '6月15日（土）']);
     expect(bubble.body.contents.slice(0, 3).map((item: any) => item.text)).toEqual([
-      'テスト練習', '◷ 10:00', '📍 ○○公園',
+      'テスト練習', '🕘 10:00', '📍 ○○公園',
     ]);
     expect(bubble.footer.contents).toHaveLength(1);
-    expect(bubble.footer.contents[0].action.label).toBe('参加・不参加を登録');
+    expect(bubble.footer.contents[0].action.label).toBe('出欠を回答する');
   });
 
-  it('description が空でもエラーにならない', () => {
+  it('description が空の場合は備考欄を表示しない', () => {
     const practice = { ...basePractice, description: '' };
-    expect(() => buildAnnounceMessage(practice, 'liff-id-123')).not.toThrow();
+    const msg = buildAnnounceMessage(practice, 'liff-id-123');
+    expect((msg.contents as any).contents[0].body.contents).toHaveLength(3);
   });
 
   it('description がある場合は body に含まれる', () => {
     const msg = buildAnnounceMessage(basePractice, 'liff-id-123');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const bodyContents = (msg.contents as any).contents[0].body.contents as any[];
-    const texts = JSON.stringify(bodyContents);
-    expect(texts).toContain('持ち物: ラケット');
+    expect(bodyContents[3].text).toBe('💬 持ち物: ラケット');
+  });
+  it('終了時刻がある場合は時間帯を表示する', () => {
+    const msg = buildAnnounceMessage({ ...basePractice, endTime: '12:00' }, 'liff-id-123');
+    expect((msg.contents as any).contents[0].body.contents[1].text).toBe('🕘 10:00〜12:00');
+  });
+
+  it('空白のみの備考は表示しない', () => {
+    const msg = buildAnnounceMessage({ ...basePractice, description: '  \n  ' }, 'liff-id-123');
+    expect((msg.contents as any).contents[0].body.contents).toHaveLength(3);
   });
 });
