@@ -6,7 +6,7 @@ export function buildAnnounceMessage(practice: Practice, liffId: string): Record
   const liffUrl = `https://liff.line.me/${liffId}?practiceId=${encodeURIComponent(practice.id)}`;
   const [year, month, day] = practice.date.split('-').map(Number);
   const weekday = WEEKDAYS[new Date(year, month - 1, day).getDay()];
-  const displayDate = `${month}/${day}（${weekday}）`;
+  const displayDate = `${month}月${day}日（${weekday}）`;
   const formattedDate = `${practice.date.replace(/-/g, '/')}（${weekday}）`;
 
   return {
@@ -20,39 +20,40 @@ export function buildAnnounceMessage(practice: Practice, liffId: string): Record
         header: {
           type: 'box',
           layout: 'vertical',
-          backgroundColor: '#00875A',
+          backgroundColor: '#FFFFFF',
           paddingAll: '20px',
           spacing: 'md',
           contents: [
-            { type: 'text', text: '🎾 練習案内', color: '#FFFFFF', size: 'md' },
-            { type: 'text', text: displayDate, color: '#FFFFFF', size: 'xxl', weight: 'bold' },
+            { type: 'text', text: '練習案内', color: '#777777', size: 'md' },
+            { type: 'text', text: displayDate, color: '#222222', size: 'xxl', weight: 'bold', wrap: true },
           ],
         },
         body: {
           type: 'box',
           layout: 'vertical',
-          backgroundColor: '#111111',
+          backgroundColor: '#FFFFFF',
           paddingAll: '20px',
-          spacing: 'lg',
+          spacing: 'sm',
           contents: [
-            { type: 'text', text: practice.title, color: '#FFFFFF', size: 'xl', weight: 'bold', wrap: true },
-            { type: 'text', text: `◷ ${practice.time}${practice.endTime ? `〜${practice.endTime}` : ''}`, color: '#FFFFFF', size: 'lg', wrap: true },
-            { type: 'text', text: `📍 ${practice.location}`, color: '#FFFFFF', size: 'lg', wrap: true },
-            ...(practice.description
-              ? [{ type: 'text', text: practice.description, color: '#CCCCCC', size: 'sm', wrap: true }]
+            { type: 'text', text: practice.title, color: '#222222', size: 'md', wrap: true },
+            { type: 'text', text: `🕘 ${practice.time}${practice.endTime ? `〜${practice.endTime}` : ''}`, color: '#222222', size: 'md', wrap: true },
+            { type: 'text', text: `📍 ${practice.location}`, color: '#222222', size: 'md', wrap: true },
+            ...(practice.description?.trim()
+              ? [{ type: 'text', text: `💬 ${practice.description.trim()}`, color: '#555555', size: 'md', wrap: true }]
               : []),
           ],
         },
         footer: {
           type: 'box',
           layout: 'vertical',
-          backgroundColor: '#111111',
+          backgroundColor: '#FFFFFF',
           paddingAll: '16px',
           contents: [{
             type: 'button',
-            style: 'secondary',
+            style: 'primary',
+            color: '#06A94F',
             height: 'md',
-            action: { type: 'uri', label: '参加・不参加を登録', uri: liffUrl },
+            action: { type: 'uri', label: '出欠を回答する', uri: liffUrl },
           }],
         },
         styles: { footer: { separator: false } },
