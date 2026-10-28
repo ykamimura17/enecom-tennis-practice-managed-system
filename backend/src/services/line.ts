@@ -20,22 +20,22 @@ export function buildAnnounceMessage(practice: Practice, liffId: string): Record
         header: {
           type: 'box',
           layout: 'vertical',
-          backgroundColor: '#FFFFFF',
-          paddingAll: '20px',
-          spacing: 'md',
+          backgroundColor: '#06A94F',
+          paddingAll: '12px',
           contents: [
-            { type: 'text', text: '練習案内', color: '#777777', size: 'md' },
-            { type: 'text', text: displayDate, color: '#222222', size: 'xxl', weight: 'bold', wrap: true },
+            { type: 'text', text: '練習案内', color: '#FFFFFF', size: 'md', weight: 'bold' },
           ],
         },
         body: {
           type: 'box',
           layout: 'vertical',
           backgroundColor: '#FFFFFF',
-          paddingAll: '20px',
+          paddingAll: '16px',
           spacing: 'sm',
           contents: [
-            { type: 'text', text: practice.title, color: '#222222', size: 'md', wrap: true },
+            { type: 'text', text: displayDate, color: '#222222', size: 'lg', weight: 'bold', wrap: true },
+            { type: 'text', text: practice.title, color: '#222222', size: 'lg', weight: 'bold', wrap: true },
+            { type: 'separator', color: '#DDDDDD', margin: 'sm' },
             { type: 'text', text: `🕘 ${practice.time}${practice.endTime ? `〜${practice.endTime}` : ''}`, color: '#222222', size: 'md', wrap: true },
             { type: 'text', text: `📍 ${practice.location}`, color: '#222222', size: 'md', wrap: true },
             ...(practice.description?.trim()
