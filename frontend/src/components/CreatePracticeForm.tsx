@@ -7,9 +7,10 @@ interface Props {
   onSubmit: (data: FormData) => Promise<void>;
   onClose: () => void;
   initialValues?: FormData;
+  practices?: Practice[];
 }
 
-export function CreatePracticeForm({ onSubmit, onClose, initialValues }: Props) {
+export function CreatePracticeForm({ onSubmit, onClose, initialValues, practices = [] }: Props) {
   const isEdit = !!initialValues;
   const [title, setTitle] = useState(initialValues?.title ?? '');
   const [date, setDate] = useState(initialValues?.date ?? '');
@@ -19,6 +20,21 @@ export function CreatePracticeForm({ onSubmit, onClose, initialValues }: Props) 
   const [description, setDescription] = useState(initialValues?.description ?? '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copySourceId, setCopySourceId] = useState('');
+  const copyCandidates = [...practices]
+    .sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))
+    .slice(0, 10);
+
+  function copyPractice() {
+    const source = copyCandidates.find(p => p.id === copySourceId);
+    if (!source) return;
+    setTitle(source.title);
+    setTime(source.time);
+    setEndTime(source.endTime ?? '');
+    setLocation(source.location);
+    setDescription(source.description);
+    setError(null);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +59,22 @@ export function CreatePracticeForm({ onSubmit, onClose, initialValues }: Props) 
       <div style={styles.modal}>
         <h2 style={styles.heading}>{isEdit ? '練習を編集' : '練習を追加'}</h2>
         <form onSubmit={handleSubmit}>
+          {!isEdit && <div style={styles.field}>
+            <label htmlFor="copy-practice" style={styles.label}>練習からコピー（新しい順に10件）</label>
+            <select id="copy-practice" style={styles.input} value={copySourceId}
+              disabled={submitting || copyCandidates.length === 0}
+              onChange={e => setCopySourceId(e.target.value)}>
+              <option value="">コピー元の練習を選択してください</option>
+              {copyCandidates.map(p => <option key={p.id} value={p.id}>
+                {p.date.replace(/-/g, '/')} {p.time} {p.title} · {p.location}
+              </option>)}
+            </select>
+            <button type="button" style={{ ...styles.cancelBtn, width: '100%', marginTop: 8 }}
+              disabled={!copySourceId || submitting} onClick={copyPractice}>内容をコピー</button>
+            <p style={{ fontSize: 12, color: '#555' }}>
+              {copyCandidates.length === 0 ? 'コピーできる練習がありません。' : 'タイトル・時間・場所・備考をコピーします。日付は新しく指定してください。'}
+            </p>
+          </div>}
           <div style={styles.field}>
             <label style={styles.label}>タイトル</label>
             <input style={styles.input} value={title} onChange={e => setTitle(e.target.value)} required />

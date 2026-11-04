@@ -105,7 +105,7 @@ export function AdminPage({userInfo,onPracticeCreated}:{userInfo:UserInfo;onPrac
     </>}
     {error&&<p className="a-admin-error" role="alert">{error}</p>}
     {notice&&<p className="a-admin-success" role="status">{notice}</p>}
-    {showCreate&&<CreatePracticeForm onSubmit={create} onClose={()=>setShowCreate(false)}/>}
+    {showCreate&&<CreatePracticeForm practices={practices} onSubmit={create} onClose={()=>setShowCreate(false)}/>}
     {editing&&<CreatePracticeForm initialValues={{title:editing.title,date:editing.date,time:editing.time,endTime:editing.endTime,location:editing.location,description:editing.description}} onSubmit={update} onClose={()=>setEditing(null)}/>}
   </section>;
 }
